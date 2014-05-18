@@ -35,6 +35,7 @@
     <string name="feedback_send">发 送</string>
     <string name="feedback_hint">也许您的反馈就是下一个引爆点，如有必要，还请留下您的联系方式。</string>
     <string name="feedback_sending">正在发送，请稍候&#8230;</string>
+    <string name="feedback_send_failed">发送失败，请稍候再试</string>
     <string name="feedback_thanks">非常感谢您的反馈</string>
     <string name="action_about_us">关 于</string>
     <string name="action_exit">退 出</string>

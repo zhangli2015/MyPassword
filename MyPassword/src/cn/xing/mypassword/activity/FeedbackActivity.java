@@ -74,7 +74,7 @@ public class FeedbackActivity extends BaseActivity
 			progressDialog.setMessage(getString(R.string.feedback_sending));
 			progressDialog.setCancelable(true);
 			progressDialog.setIndeterminate(false);
-			
+
 			progressDialog.show();
 			AsyncTask<String, Void, Boolean> asyncTask = new AsyncTask<String, Void, Boolean>()
 			{
@@ -104,9 +104,16 @@ public class FeedbackActivity extends BaseActivity
 				@Override
 				protected void onPostExecute(Boolean result)
 				{
-					showToast(R.string.feedback_thanks);
+					if (result)
+					{
+						showToast(R.string.feedback_thanks);
+						finish();
+					}
+					else
+					{
+						showToast(R.string.feedback_send_failed);
+					}
 					progressDialog.dismiss();
-					finish();
 				}
 			};
 			asyncTask.execute(content);
