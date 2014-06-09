@@ -68,7 +68,13 @@ public class MainAdapter extends BaseAdapter
 					return 1;
 				}
 			}
-			return (int) (rhs.password.getCreateDate() - lhs.password.getCreateDate());
+			long value = rhs.password.getCreateDate() - lhs.password.getCreateDate();
+			if (value > 0)
+				return 1;
+			else if (value == 0)
+				return 0;
+			else
+				return -1;
 		}
 	};
 
@@ -217,8 +223,7 @@ public class MainAdapter extends BaseAdapter
 		{
 			Builder builder = new Builder(context);
 
-			String[] item = new String[] { context.getResources().getString(R.string.copy_name),
-					context.getResources().getString(R.string.copy_password) };
+			String[] item = new String[] { context.getResources().getString(R.string.copy_name), context.getResources().getString(R.string.copy_password) };
 
 			builder.setItems(item, new DialogInterface.OnClickListener()
 			{
@@ -229,16 +234,14 @@ public class MainAdapter extends BaseAdapter
 					{
 						case 0:
 							// ¸´ÖÆÃû×Ö
-							ClipboardManager cmbName = (ClipboardManager) context
-									.getSystemService(Context.CLIPBOARD_SERVICE);
+							ClipboardManager cmbName = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 							ClipData clipDataName = ClipData.newPlainText(null, passwordItem.password.getUserName());
 							cmbName.setPrimaryClip(clipDataName);
 							Toast.makeText(context, R.string.copy_name_toast, Toast.LENGTH_SHORT).show();
 							break;
 						case 1:
 							// ¸´ÖÆÃÜÂë
-							ClipboardManager cmbPassword = (ClipboardManager) context
-									.getSystemService(Context.CLIPBOARD_SERVICE);
+							ClipboardManager cmbPassword = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 							ClipData clipData = ClipData.newPlainText(null, passwordItem.password.getPassword());
 							cmbPassword.setPrimaryClip(clipData);
 							Toast.makeText(context, R.string.copy_password_toast, Toast.LENGTH_SHORT).show();
