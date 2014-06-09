@@ -33,7 +33,7 @@
     <string name="action_jazzy_effect_toast">密码太少，多保存几个再试试？</string>
     <string name="action_feedback">意见反馈</string>
     <string name="feedback_send">发 送</string>
-    <string name="feedback_hint">也许您的反馈就是下一个引爆点，如有必要，还请留下您的联系方式。</string>
+    <string name="feedback_hint">我的成长离不开您的支持</string>
     <string name="feedback_sending">正在发送，请稍候&#8230;</string>
     <string name="feedback_send_failed">发送失败，请稍候再试</string>
     <string name="feedback_thanks">非常感谢您的反馈</string>
