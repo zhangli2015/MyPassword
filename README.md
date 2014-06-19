@@ -2,8 +2,9 @@
 ==============================
 <img src="MyPassword/ic_launcher-web.png" width="256px"/>
 
-* E-mail：zengdexing1989@163.com
+* E-mail：mail@zengdexing.com
 * File encoding：GBK
+* 你的支持是我最大的动力
 
 简介：
 ---------------------------------
