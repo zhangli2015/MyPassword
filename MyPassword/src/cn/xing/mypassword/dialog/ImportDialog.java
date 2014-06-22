@@ -27,26 +27,22 @@ import cn.xing.mypassword.service.Mainbinder;
  * @author zengdexing
  * 
  */
-public class ImportDialog extends ProgressDialog implements Callback
-{
+public class ImportDialog extends ProgressDialog implements Callback {
 	private Mainbinder mainbinder;
 	private Handler handler = new Handler(this);
 
-	public ImportDialog(Context context, Mainbinder mainbinder)
-	{
+	public ImportDialog(Context context, Mainbinder mainbinder) {
 		super(context);
 		setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		setCancelable(false);
 		this.mainbinder = mainbinder;
 	}
 
-	private String getString(int id)
-	{
+	private String getString(int id) {
 		return getContext().getString(id);
 	}
 
-	private String getString(int id, Object... obj)
-	{
+	private String getString(int id, Object... obj) {
 		return getContext().getString(id, obj);
 	}
 
@@ -55,8 +51,7 @@ public class ImportDialog extends ProgressDialog implements Callback
 	 * 
 	 * @return
 	 */
-	private File getRootFile()
-	{
+	private File getRootFile() {
 		File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/MyPassword/");
 		return file;
 	}
@@ -68,16 +63,12 @@ public class ImportDialog extends ProgressDialog implements Callback
 	 *            要搜索的文件夹
 	 * @return 该文件夹下保存的文件
 	 */
-	private ArrayList<SearchResult> searchFile(File aFile)
-	{
+	private ArrayList<SearchResult> searchFile(File aFile) {
 		ArrayList<SearchResult> searchResults = new ArrayList<>();
 		File[] files = aFile.listFiles();
-		if (files != null)
-		{
-			for (File file : files)
-			{
-				if (file.getName().endsWith(".mp"))
-				{
+		if (files != null) {
+			for (File file : files) {
+				if (file.getName().endsWith(".mp")) {
 					SearchResult searchResult = new SearchResult();
 					searchResult.name = file.getName();
 					searchResult.absoluteFilePath = file.getAbsolutePath();
@@ -92,8 +83,7 @@ public class ImportDialog extends ProgressDialog implements Callback
 	 * 显示
 	 */
 	@Override
-	public void show()
-	{
+	public void show() {
 		setMessage(getString(R.string.import_search_file));
 		super.show();
 		handler.sendEmptyMessageDelayed(R.id.msg_import_search_delay_500, 500);
@@ -102,14 +92,11 @@ public class ImportDialog extends ProgressDialog implements Callback
 	/**
 	 * 搜索文件
 	 */
-	private void searchFile()
-	{
-		new AsyncSingleTask<ArrayList<SearchResult>>()
-		{
+	private void searchFile() {
+		new AsyncSingleTask<ArrayList<SearchResult>>() {
 			@Override
 			protected AsyncResult<ArrayList<SearchResult>> doInBackground(
-					AsyncResult<ArrayList<SearchResult>> asyncResult)
-			{
+					AsyncResult<ArrayList<SearchResult>> asyncResult) {
 				ArrayList<SearchResult> searchResults = new ArrayList<>();
 
 				File rootFile = getRootFile();
@@ -120,28 +107,22 @@ public class ImportDialog extends ProgressDialog implements Callback
 			}
 
 			@Override
-			protected void runOnUIThread(AsyncResult<ArrayList<SearchResult>> asyncResult)
-			{
+			protected void runOnUIThread(AsyncResult<ArrayList<SearchResult>> asyncResult) {
 				dismiss();
 				final ArrayList<SearchResult> searchResults = asyncResult.getData();
-				if (searchResults.size() == 0)
-				{
+				if (searchResults.size() == 0) {
 					// 搜索失败
 					Builder builder = new Builder(getContext());
 					builder.setMessage(getString(R.string.import_search_failed));
 					builder.setNegativeButton(R.string.import_sure, null);
 					builder.show();
-				}
-				else
-				{
+				} else {
 					// 搜索成功，用户选择文件
 					Builder builder = new Builder(getContext());
 					builder.setTitle(R.string.import_chiose_file);
-					builder.setItems(getItems(searchResults), new OnClickListener()
-					{
+					builder.setItems(getItems(searchResults), new OnClickListener() {
 						@Override
-						public void onClick(DialogInterface dialog, int which)
-						{
+						public void onClick(DialogInterface dialog, int which) {
 							SearchResult searchResult = searchResults.get(which);
 							Message message = handler.obtainMessage(R.id.msg_import, searchResult);
 							message.sendToTarget();
@@ -159,19 +140,16 @@ public class ImportDialog extends ProgressDialog implements Callback
 	 * @param searchResults
 	 * @return
 	 */
-	private String[] getItems(ArrayList<SearchResult> searchResults)
-	{
+	private String[] getItems(ArrayList<SearchResult> searchResults) {
 		String[] result = new String[searchResults.size()];
-		for (int i = 0; i < result.length; i++)
-		{
+		for (int i = 0; i < result.length; i++) {
 			result[i] = searchResults.get(i).name;
 		}
 		return result;
 	}
 
 	/** 搜索结果 */
-	private static class SearchResult
-	{
+	private static class SearchResult {
 		/** 文件名 */
 		String name;
 		/** 文件的绝对路径 */
@@ -179,36 +157,27 @@ public class ImportDialog extends ProgressDialog implements Callback
 	}
 
 	/** 导入文件 */
-	private void importFile(final SearchResult searchResult)
-	{
-		new AsyncSingleTask<ArrayList<Password>>()
-		{
+	private void importFile(final SearchResult searchResult) {
+		new AsyncSingleTask<ArrayList<Password>>() {
 			@Override
-			protected AsyncResult<ArrayList<Password>> doInBackground(AsyncResult<ArrayList<Password>> asyncResult)
-			{
+			protected AsyncResult<ArrayList<Password>> doInBackground(AsyncResult<ArrayList<Password>> asyncResult) {
 				FileInputStream fileInputStream = null;
-				try
-				{
+				try {
 					fileInputStream = new FileInputStream(searchResult.absoluteFilePath);
 					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));
 
 					ArrayList<Password> passwords = new ArrayList<>();
 					String passwordStr = null;
-					while ((passwordStr = bufferedReader.readLine()) != null)
-					{
+					while ((passwordStr = bufferedReader.readLine()) != null) {
 						Password password = Password.createFormJson(passwordStr);
 						passwords.add(password);
 					}
 					bufferedReader.close();
 					asyncResult.setResult(0);
 					asyncResult.setData(passwords);
-				}
-				catch (Exception e)
-				{
+				} catch (Exception e) {
 					asyncResult.setResult(-1);
-				}
-				finally
-				{
+				} finally {
 					close(fileInputStream);
 				}
 				// 延时500毫秒回调结果
@@ -217,15 +186,12 @@ public class ImportDialog extends ProgressDialog implements Callback
 			}
 
 			@Override
-			protected void runOnUIThread(AsyncResult<ArrayList<Password>> asyncResult)
-			{
+			protected void runOnUIThread(AsyncResult<ArrayList<Password>> asyncResult) {
 				dismiss();
-				if (asyncResult.getResult() == 0 && mainbinder != null)
-				{
+				if (asyncResult.getResult() == 0 && mainbinder != null) {
 					// 导入文件
 					ArrayList<Password> passwords = asyncResult.getData();
-					for (Password password : passwords)
-					{
+					for (Password password : passwords) {
 						mainbinder.insertPassword(password);
 					}
 
@@ -233,9 +199,7 @@ public class ImportDialog extends ProgressDialog implements Callback
 					builder.setMessage(getString(R.string.import_file_successs, passwords.size()));
 					builder.setNegativeButton(R.string.import_sure, null);
 					builder.show();
-				}
-				else
-				{
+				} else {
 					// 读取文件失败
 					Builder builder = new Builder(getContext());
 					builder.setMessage(getString(R.string.import_file_failed));
@@ -246,26 +210,19 @@ public class ImportDialog extends ProgressDialog implements Callback
 		}.execute();
 	}
 
-	private void close(Closeable closeable)
-	{
-		if (closeable != null)
-		{
-			try
-			{
+	private void close(Closeable closeable) {
+		if (closeable != null) {
+			try {
 				closeable.close();
-			}
-			catch (IOException e)
-			{
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
-		switch (msg.what)
-		{
+	public boolean handleMessage(Message msg) {
+		switch (msg.what) {
 			case R.id.msg_import_search_delay_500:
 				searchFile();
 				break;

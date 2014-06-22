@@ -26,8 +26,7 @@ import cn.zdx.lib.annotation.FindViewById;
  * @author zengdexing
  * 
  */
-public class EntryActivity extends BaseActivity implements Callback, OnPatternListener
-{
+public class EntryActivity extends BaseActivity implements Callback, OnPatternListener {
 	@FindViewById(R.id.entry_activity_iconview)
 	private View iconView;
 	private Handler handler;
@@ -46,8 +45,7 @@ public class EntryActivity extends BaseActivity implements Callback, OnPatternLi
 	private TextView tipsView;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_entry);
 
@@ -55,8 +53,7 @@ public class EntryActivity extends BaseActivity implements Callback, OnPatternLi
 		lockPatternView.setOnPatternListener(this);
 
 		List<Cell> cells = LockPatternUtil.getLocalCell(this);
-		if (cells.size() == 0)
-		{
+		if (cells.size() == 0) {
 			// 首次使用，没有设置密码，跳转设置密码页
 			lockPatternView.setEnabled(false);
 			handler.sendEmptyMessageDelayed(MESSAGE_START_SETLOCKPATTERN, 2000);
@@ -70,17 +67,14 @@ public class EntryActivity extends BaseActivity implements Callback, OnPatternLi
 	/**
 	 * 检查包名，防止打包党简简单单二次打包
 	 */
-	private void checkPackageName()
-	{
+	private void checkPackageName() {
 		if (!getPackageName().equals(getString(R.string.package_name)))
 			finish();
 	}
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
-		switch (msg.what)
-		{
+	public boolean handleMessage(Message msg) {
+		switch (msg.what) {
 			case MESSAGE_START_SETLOCKPATTERN:
 				startActivity(new Intent(this, SetLockpatternActivity.class));
 				finish();
@@ -107,8 +101,7 @@ public class EntryActivity extends BaseActivity implements Callback, OnPatternLi
 	/**
 	 * 图标动画
 	 */
-	private void initAnimation()
-	{
+	private void initAnimation() {
 		Animation iconAnimation = AnimationUtils.loadAnimation(this, R.anim.entry_animation_icon);
 		iconView.startAnimation(iconAnimation);
 
@@ -117,45 +110,36 @@ public class EntryActivity extends BaseActivity implements Callback, OnPatternLi
 		tipsView.startAnimation(getAlpAnimation());
 	}
 
-	private Animation getAlpAnimation()
-	{
+	private Animation getAlpAnimation() {
 		return AnimationUtils.loadAnimation(this, R.anim.entry_animation_alpha_from_0_to_1);
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		super.onDestroy();
 	}
 
 	@Override
-	public void onPatternStart()
-	{
+	public void onPatternStart() {
 		handler.removeMessages(MESSAGE_CLEAR_LOCKPATTERNVIEW);
 		tipsView.setText("");
 	}
 
 	@Override
-	public void onPatternCleared()
-	{
+	public void onPatternCleared() {
 	}
 
 	@Override
-	public void onPatternCellAdded(List<Cell> pattern)
-	{
+	public void onPatternCellAdded(List<Cell> pattern) {
 	}
 
 	@Override
-	public void onPatternDetected(List<Cell> pattern)
-	{
-		if (LockPatternUtil.checkPatternCell(LockPatternUtil.getLocalCell(this), pattern))
-		{
+	public void onPatternDetected(List<Cell> pattern) {
+		if (LockPatternUtil.checkPatternCell(LockPatternUtil.getLocalCell(this), pattern)) {
 			// 认证通过
 			lockPatternView.setDisplayMode(DisplayMode.Correct);
 			handler.sendEmptyMessage(MESSAGE_START_MAIN);
-		}
-		else
-		{
+		} else {
 			// 认证失败
 			lockPatternView.setDisplayMode(DisplayMode.Wrong);
 			tipsView.setText(R.string.lock_pattern_error);

@@ -11,8 +11,7 @@ import org.json.JSONObject;
  * @author zengdexing
  * 
  */
-public class Password implements Serializable
-{
+public class Password implements Serializable {
 	private static final long serialVersionUID = -961233794781935060L;
 
 	/** 数据库主键 */
@@ -30,70 +29,60 @@ public class Password implements Serializable
 	/** 标注 */
 	private String note;
 
+	/** 密码所属分组 */
+	private String groupName;
+
 	private boolean isTop = false;
 
-	public int getId()
-	{
+	public int getId() {
 		return id;
 	}
 
-	public long getCreateDate()
-	{
+	public long getCreateDate() {
 		return createDate;
 	}
 
-	public String getTitle()
-	{
+	public String getTitle() {
 		return title;
 	}
 
-	public String getUserName()
-	{
+	public String getUserName() {
 		return userName;
 	}
 
-	public String getPassword()
-	{
+	public String getPassword() {
 		return password;
 	}
 
-	public String getNote()
-	{
+	public String getNote() {
 		return note;
 	}
 
-	public void setId(int id)
-	{
+	public void setId(int id) {
 		this.id = id;
 	}
 
-	public void setCreateDate(long createDate)
-	{
+	public void setCreateDate(long createDate) {
 		this.createDate = createDate;
 	}
 
-	public void setTitle(String title)
-	{
+	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	public void setUserName(String userName)
-	{
+	public void setUserName(String userName) {
 		this.userName = userName;
 	}
 
-	public void setPassword(String password)
-	{
+	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	public void setNote(String note)
-	{
+	public void setNote(String note) {
 		this.note = note;
 	}
 
-	public static Password createFormJson(String json) throws JSONException
-	{
+	public static Password createFormJson(String json) throws JSONException {
 		Password password = new Password();
 		JSONObject jsonObject = new JSONObject(json);
 		password.setId(jsonObject.optInt("id", 0));
@@ -103,14 +92,13 @@ public class Password implements Serializable
 		password.setPassword(jsonObject.getString("password"));
 		password.setNote(jsonObject.getString("note"));
 		password.setTop(jsonObject.optBoolean("isTop", false));
+		password.setGroupName(jsonObject.optString("groupName", "默认"));
 		return password;
 	}
 
-	public String toJSON()
-	{
+	public String toJSON() {
 		JSONObject jsonObject = new JSONObject();
-		try
-		{
+		try {
 			jsonObject.put("id", id);
 			jsonObject.put("createDate", createDate);
 			jsonObject.put("title", title);
@@ -118,28 +106,32 @@ public class Password implements Serializable
 			jsonObject.put("password", password);
 			jsonObject.put("note", note);
 			jsonObject.put("isTop", isTop);
-		}
-		catch (JSONException e)
-		{
+			jsonObject.put("groupName", groupName);
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		return jsonObject.toString();
 	}
 
-	public boolean isTop()
-	{
+	public boolean isTop() {
 		return isTop;
 	}
 
-	public void setTop(boolean isTop)
-	{
+	public void setTop(boolean isTop) {
 		this.isTop = isTop;
 	}
 
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "Password [id=" + id + ", createDate=" + createDate + ", title=" + title + ", userName=" + userName
-				+ ", password=" + password + ", note=" + note + ", isTop=" + isTop + "]";
+				+ ", password=" + password + ", note=" + note + ", groupName=" + groupName + ", isTop=" + isTop + "]";
 	}
 }

@@ -33,8 +33,7 @@ import com.twotoasters.jazzylistview.JazzyListView;
  * 
  */
 public class MainFragment extends BaseFragment implements OnGetAllPasswordCallback, OnPasswordListener,
-		OnSettingChangeListener, android.view.View.OnClickListener
-{
+		OnSettingChangeListener, android.view.View.OnClickListener {
 	/** 数据 */
 	private MainAdapter mainAdapter;
 
@@ -45,17 +44,14 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 	/** 没有数据的提示框 */
 	private View noDataView;
 
-	private ServiceConnection serviceConnection = new ServiceConnection()
-	{
+	private ServiceConnection serviceConnection = new ServiceConnection() {
 		@Override
-		public void onServiceDisconnected(ComponentName name)
-		{
+		public void onServiceDisconnected(ComponentName name) {
 			unregistOnPasswordListener();
 		}
 
 		@Override
-		public void onServiceConnected(ComponentName name, IBinder service)
-		{
+		public void onServiceConnected(ComponentName name, IBinder service) {
 			mainbinder = (Mainbinder) service;
 			mainbinder.getAllPassword(MainFragment.this);
 			mainbinder.registOnPasswordListener(MainFragment.this);
@@ -63,8 +59,7 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 	};
 
 	@Override
-	public void onCreate(Bundle savedInstanceState)
-	{
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mainAdapter = new MainAdapter(getActivity());
 
@@ -79,34 +74,29 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 	 * 
 	 * @return
 	 */
-	private JazzyEffect getJazzyEffect()
-	{
+	private JazzyEffect getJazzyEffect() {
 		String strKey = getBaseActivity().getSetting(SettingKey.JAZZY_EFFECT, JazzyHelper.STANDARD + "");
 		JazzyEffect jazzyEffect = JazzyHelper.valueOf(Integer.valueOf(strKey));
 		return jazzyEffect;
 	}
 
 	@Override
-	public void onDestroy()
-	{
+	public void onDestroy() {
 		super.onDestroy();
 		unregistOnPasswordListener();
 		getActivity().unbindService(serviceConnection);
 		getBaseActivity().getMyApplication().unregistOnSettingChangeListener(SettingKey.JAZZY_EFFECT, this);
 	}
 
-	private void unregistOnPasswordListener()
-	{
-		if (mainbinder != null)
-		{
+	private void unregistOnPasswordListener() {
+		if (mainbinder != null) {
 			mainbinder.unregistOnPasswordListener(this);
 			mainbinder = null;
 		}
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 		listView = (JazzyListView) rootView.findViewById(R.id.main_listview);
 		listView.setAdapter(mainAdapter);
@@ -114,30 +104,22 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 
 		noDataView = rootView.findViewById(R.id.main_no_passsword);
 		noDataView.setOnClickListener(this);
-		if (mainbinder == null)
-		{
+		if (mainbinder == null) {
 			noDataView.setVisibility(View.GONE);
 			listView.setVisibility(View.VISIBLE);
-		}
-		else
-		{
+		} else {
 			initView();
 		}
 
 		return rootView;
 	}
 
-	private void initView()
-	{
-		if (noDataView != null)
-		{
-			if (mainAdapter.getCount() == 0)
-			{
+	private void initView() {
+		if (noDataView != null) {
+			if (mainAdapter.getCount() == 0) {
 				noDataView.setVisibility(View.VISIBLE);
 				listView.setVisibility(View.GONE);
-			}
-			else
-			{
+			} else {
 				noDataView.setVisibility(View.GONE);
 				listView.setVisibility(View.VISIBLE);
 			}
@@ -145,58 +127,48 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 	}
 
 	@Override
-	public void onDestroyView()
-	{
+	public void onDestroyView() {
 		super.onDestroyView();
 		listView = null;
 		noDataView = null;
 	}
 
 	@Override
-	public void onGetAllPassword(List<Password> passwords)
-	{
+	public void onGetAllPassword(List<Password> passwords) {
 		mainAdapter.setData(passwords, mainbinder);
 		initView();
 	}
 
 	@Override
-	public void onSettingChange(SettingKey key)
-	{
-		if (listView != null && key == SettingKey.JAZZY_EFFECT)
-		{
+	public void onSettingChange(SettingKey key) {
+		if (listView != null && key == SettingKey.JAZZY_EFFECT) {
 			listView.setTransitionEffect(getJazzyEffect());
-			if (listView.getCount() < 6)
-			{
+			if (listView.getCount() < 6) {
 				showToast(R.string.action_jazzy_effect_toast, Toast.LENGTH_LONG);
 			}
 		}
 	}
 
 	@Override
-	public void onNewPassword(Password password)
-	{
+	public void onNewPassword(Password password) {
 		mainAdapter.onNewPassword(password);
 		initView();
 	}
 
 	@Override
-	public void onDeletePassword(int id)
-	{
+	public void onDeletePassword(int id) {
 		mainAdapter.onDeletePassword(id);
 		initView();
 	}
 
 	@Override
-	public void onUpdatePassword(Password newPassword)
-	{
+	public void onUpdatePassword(Password newPassword) {
 		mainAdapter.onUpdatePassword(newPassword);
 	}
 
 	@Override
-	public void onClick(View v)
-	{
-		switch (v.getId())
-		{
+	public void onClick(View v) {
+		switch (v.getId()) {
 			case R.id.main_no_passsword:
 				Intent intent = new Intent(getActivity(), EditPasswordActivity.class);
 				getActivity().startActivity(intent);

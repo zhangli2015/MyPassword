@@ -26,8 +26,7 @@ import cn.zdx.lib.annotation.FindViewById;
  * @author zengdexing
  * 
  */
-public class SetLockpatternActivity extends BaseActivity implements OnPatternListener, Callback
-{
+public class SetLockpatternActivity extends BaseActivity implements OnPatternListener, Callback {
 	@FindViewById(R.id.set_lockpattern_view)
 	private LockPatternView lockPatternView;
 
@@ -51,8 +50,7 @@ public class SetLockpatternActivity extends BaseActivity implements OnPatternLis
 	private Handler handler = new Handler(this);
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_set_lockpattern);
 		initActionBar();
@@ -64,16 +62,12 @@ public class SetLockpatternActivity extends BaseActivity implements OnPatternLis
 	 * 初始化模式：如果用户没有设置密码，则处于第一步 {@link #MODE_FIRST_STEP}，否则用户需要验证
 	 * {@link #MODE_AUTH}
 	 */
-	private void initMode()
-	{
+	private void initMode() {
 		List<LockPatternView.Cell> list = LockPatternUtil.getLocalCell(this);
-		if (list.size() != 0)
-		{
+		if (list.size() != 0) {
 			mode = MODE_AUTH;
 			textView.setText(R.string.set_lock_pattern_auth);
-		}
-		else
-		{
+		} else {
 			mode = MODE_FIRST_STEP;
 			textView.setText(R.string.set_lock_pattern_first_step);
 			showFirstUserDialog();
@@ -81,57 +75,47 @@ public class SetLockpatternActivity extends BaseActivity implements OnPatternLis
 	}
 
 	/** 第一次使用，设置解锁图案 */
-	private void showFirstUserDialog()
-	{
+	private void showFirstUserDialog() {
 		Builder builder = new Builder(this);
 		builder.setMessage(R.string.set_lock_pattern_first_message);
 		builder.setNeutralButton(R.string.set_lock_pattern_first_sure, null);
 		builder.show();
 	}
 
-	private void initActionBar()
-	{
+	private void initActionBar() {
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
-	public void onPatternStart()
-	{
+	public void onPatternStart() {
 		textView.setText(R.string.set_lock_pattern_step_tips);
 	}
 
 	@Override
-	public void onPatternCleared()
-	{
+	public void onPatternCleared() {
 
 	}
 
 	@Override
-	public void onPatternCellAdded(List<Cell> pattern)
-	{
+	public void onPatternCellAdded(List<Cell> pattern) {
 
 	}
 
 	private List<Cell> lastCells;
 
 	@Override
-	public void onPatternDetected(List<Cell> pattern)
-	{
-		switch (mode)
-		{
+	public void onPatternDetected(List<Cell> pattern) {
+		switch (mode) {
 			case MODE_AUTH:
-				if (LockPatternUtil.authPatternCell(this, pattern))
-				{
+				if (LockPatternUtil.authPatternCell(this, pattern)) {
 					// 验证通过，到第一步
 					lockPatternView.setDisplayMode(DisplayMode.Correct);
 					lockPatternView.setEnabled(false);
 					textView.setText(R.string.set_lock_pattern_auth_ok);
 					handler.sendEmptyMessageDelayed(4, 1000);
-				}
-				else
-				{
+				} else {
 					// 验证不通过，继续输入密码
 					lockPatternView.setEnabled(false);
 					lockPatternView.setDisplayMode(DisplayMode.Wrong);
@@ -147,17 +131,14 @@ public class SetLockpatternActivity extends BaseActivity implements OnPatternLis
 				handler.sendEmptyMessageDelayed(MEG_GOTO_SECOND_STEP, 1000);
 				break;
 			case MODE_SECOND_STEP:
-				if (LockPatternUtil.checkPatternCell(lastCells, pattern))
-				{
+				if (LockPatternUtil.checkPatternCell(lastCells, pattern)) {
 					// 设置成功
 					lockPatternView.setEnabled(false);
 					lockPatternView.setDisplayMode(DisplayMode.Correct);
 					textView.setText(R.string.set_lock_pattern_second_step_tips);
 					handler.sendEmptyMessageDelayed(MEG_SET_SUCCESS, 2000);
 					LockPatternUtil.savePatternCell(this, pattern);
-				}
-				else
-				{
+				} else {
 					// 两次输入密码不一致，到第一步重新输入
 					lockPatternView.setDisplayMode(DisplayMode.Wrong);
 					lockPatternView.setEnabled(false);
@@ -171,12 +152,10 @@ public class SetLockpatternActivity extends BaseActivity implements OnPatternLis
 	}
 
 	@Override
-	public boolean handleMessage(Message msg)
-	{
+	public boolean handleMessage(Message msg) {
 		lockPatternView.setEnabled(true);
 		lockPatternView.clearPattern();
-		switch (msg.what)
-		{
+		switch (msg.what) {
 			case MEG_AUTH_ERROR:
 				textView.setText(R.string.set_lock_pattern_auth);
 				break;

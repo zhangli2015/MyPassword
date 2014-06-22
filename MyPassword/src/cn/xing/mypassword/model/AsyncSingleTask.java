@@ -6,8 +6,7 @@ import java.util.concurrent.Executors;
 import android.os.Handler;
 import android.os.Looper;
 
-public abstract class AsyncSingleTask<D>
-{
+public abstract class AsyncSingleTask<D> {
 	private static ExecutorService executorService = Executors.newSingleThreadExecutor();
 	private static Handler handler = new Handler(Looper.getMainLooper());
 
@@ -15,13 +14,11 @@ public abstract class AsyncSingleTask<D>
 	private boolean isRunned = false;
 	private int delay = 0;
 
-	public void setDelay(int delay)
-	{
+	public void setDelay(int delay) {
 		this.delay = delay;
 	}
 
-	public synchronized void execute()
-	{
+	public synchronized void execute() {
 		if (isRunned)
 			throw new RuntimeException("该任务已经运行过，不能再次调用");
 
@@ -29,21 +26,17 @@ public abstract class AsyncSingleTask<D>
 		executorService.execute(backgroundRunable);
 	}
 
-	private Runnable backgroundRunable = new Runnable()
-	{
+	private Runnable backgroundRunable = new Runnable() {
 		@Override
-		public void run()
-		{
+		public void run() {
 			asyncResult = doInBackground(new AsyncResult<D>());
 			handler.postDelayed(mainThreadRunable, delay);
 		}
 	};
 
-	private Runnable mainThreadRunable = new Runnable()
-	{
+	private Runnable mainThreadRunable = new Runnable() {
 		@Override
-		public void run()
-		{
+		public void run() {
 			runOnUIThread(asyncResult);
 		}
 	};

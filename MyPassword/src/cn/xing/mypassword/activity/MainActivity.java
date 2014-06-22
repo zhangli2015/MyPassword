@@ -33,30 +33,25 @@ import com.umeng.update.UmengUpdateAgent;
  * @author zengdexing
  * 
  */
-public class MainActivity extends BaseActivity
-{
+public class MainActivity extends BaseActivity {
 	/** 数据源 */
 	private Mainbinder mainbinder;
 	private long lastBackKeyTime;
 
-	private ServiceConnection serviceConnection = new ServiceConnection()
-	{
+	private ServiceConnection serviceConnection = new ServiceConnection() {
 		@Override
-		public void onServiceDisconnected(ComponentName name)
-		{
+		public void onServiceDisconnected(ComponentName name) {
 			mainbinder = null;
 		}
 
 		@Override
-		public void onServiceConnected(ComponentName name, IBinder service)
-		{
+		public void onServiceConnected(ComponentName name, IBinder service) {
 			mainbinder = (Mainbinder) service;
 		}
 	};
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
@@ -68,28 +63,22 @@ public class MainActivity extends BaseActivity
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
 		super.onDestroy();
 		unbindService(serviceConnection);
 	}
 
-	private boolean isExistSDCard()
-	{
-		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-		{
+	private boolean isExistSDCard() {
+		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 			return true;
-		}
-		else
+		} else
 			return false;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
+	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		switch (id)
-		{
+		switch (id) {
 			case R.id.action_add_password:
 				startActivity(new Intent(this, EditPasswordActivity.class));
 				break;
@@ -106,8 +95,7 @@ public class MainActivity extends BaseActivity
 				// 密码导出
 				if (mainbinder == null)
 					break;
-				if (!isExistSDCard())
-				{
+				if (!isExistSDCard()) {
 					showToast(R.string.export_no_sdcard);
 					break;
 				}
@@ -145,27 +133,22 @@ public class MainActivity extends BaseActivity
 	/**
 	 * 意见反馈
 	 */
-	private void onFeedbackClick()
-	{
+	private void onFeedbackClick() {
 		startActivity(new Intent(this, FeedbackActivity.class));
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event)
-	{
-		switch (keyCode)
-		{
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
 			case KeyEvent.KEYCODE_BACK:
 				long delay = Math.abs(System.currentTimeMillis() - lastBackKeyTime);
-				if (delay > 4000)
-				{
+				if (delay > 4000) {
 					// 双击退出程序
 					showToast(R.string.toast_key_back);
 					lastBackKeyTime = System.currentTimeMillis();
@@ -179,34 +162,26 @@ public class MainActivity extends BaseActivity
 		return super.onKeyDown(keyCode, event);
 	}
 
-	private void onEffectClick()
-	{
-		if (getSetting(SettingKey.JAZZY_EFFECT_INTRODUCTION, "false").equals("false"))
-		{
+	private void onEffectClick() {
+		if (getSetting(SettingKey.JAZZY_EFFECT_INTRODUCTION, "false").equals("false")) {
 			putSetting(SettingKey.JAZZY_EFFECT_INTRODUCTION, "true");
 			Builder builder = new Builder(this);
 			builder.setMessage(R.string.action_jazzy_effect_introduction);
-			builder.setNeutralButton(R.string.i_known, new OnClickListener()
-			{
+			builder.setNeutralButton(R.string.i_known, new OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					onEffectClick();
 				}
 			});
 			builder.show();
-		}
-		else
-		{
+		} else {
 			Builder builder = new Builder(this);
 			builder.setTitle(R.string.action_jazzy_effect);
 
 			final String[] effectArray = getResources().getStringArray(R.array.jazzy_effects);
-			builder.setItems(effectArray, new DialogInterface.OnClickListener()
-			{
+			builder.setItems(effectArray, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					getActivity().putSetting(SettingKey.JAZZY_EFFECT, which + "");
 					onEventEffect(effectArray[which]);
 				}
@@ -220,8 +195,7 @@ public class MainActivity extends BaseActivity
 	 * 
 	 * @param effect
 	 */
-	private void onEventEffect(String effect)
-	{
+	private void onEventEffect(String effect) {
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("effect", effect);
 		MobclickAgent.onEvent(getActivity(), "effect", map);
@@ -230,8 +204,7 @@ public class MainActivity extends BaseActivity
 	/**
 	 * 关于对话框
 	 */
-	private void onAboutClick()
-	{
+	private void onAboutClick() {
 		Builder builder = new Builder(getActivity());
 		builder.setTitle(R.string.action_about_us);
 		builder.setNeutralButton(R.string.common_sure, null);
