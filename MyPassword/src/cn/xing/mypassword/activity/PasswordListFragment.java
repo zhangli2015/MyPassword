@@ -2,18 +2,14 @@ package cn.xing.mypassword.activity;
 
 import java.util.List;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import cn.xing.mypassword.R;
-import cn.xing.mypassword.adapter.MainAdapter;
+import cn.xing.mypassword.adapter.PasswordListAdapter;
 import cn.xing.mypassword.app.BaseFragment;
 import cn.xing.mypassword.app.OnSettingChangeListener;
 import cn.xing.mypassword.model.Password;
@@ -27,15 +23,16 @@ import com.twotoasters.jazzylistview.JazzyHelper;
 import com.twotoasters.jazzylistview.JazzyListView;
 
 /**
- * 主界面，密码列表展示界面
+ * 密码列表展示界面
  * 
  * @author zengdexing
  * 
  */
-public class MainFragment extends BaseFragment implements OnGetAllPasswordCallback, OnPasswordListener,
+public class PasswordListFragment extends BaseFragment implements OnGetAllPasswordCallback, OnPasswordListener,
 		OnSettingChangeListener, android.view.View.OnClickListener {
+
 	/** 数据 */
-	private MainAdapter mainAdapter;
+	private PasswordListAdapter mainAdapter;
 
 	/** 数据源 */
 	private Mainbinder mainbinder;
@@ -44,29 +41,17 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 	/** 没有数据的提示框 */
 	private View noDataView;
 
-	private ServiceConnection serviceConnection = new ServiceConnection() {
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			unregistOnPasswordListener();
-		}
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			mainbinder = (Mainbinder) service;
-			mainbinder.getAllPassword(MainFragment.this);
-			mainbinder.registOnPasswordListener(MainFragment.this);
-		}
-	};
+	public void setDataSource(Mainbinder mainbinder) {
+		this.mainbinder = mainbinder;
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mainAdapter = new MainAdapter(getActivity());
-
+		mainAdapter = new PasswordListAdapter(getActivity());
 		getBaseActivity().getMyApplication().registOnSettingChangeListener(SettingKey.JAZZY_EFFECT, this);
 
-		Intent intent = new Intent("cn.xing.mypassword");
-		getActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+		mainbinder.getAllPassword(this);
 	}
 
 	/**
@@ -84,7 +69,6 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 	public void onDestroy() {
 		super.onDestroy();
 		unregistOnPasswordListener();
-		getActivity().unbindService(serviceConnection);
 		getBaseActivity().getMyApplication().unregistOnSettingChangeListener(SettingKey.JAZZY_EFFECT, this);
 	}
 
@@ -97,7 +81,7 @@ public class MainFragment extends BaseFragment implements OnGetAllPasswordCallba
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+		View rootView = inflater.inflate(R.layout.fragment_password_list, container, false);
 		listView = (JazzyListView) rootView.findViewById(R.id.main_listview);
 		listView.setAdapter(mainAdapter);
 		listView.setTransitionEffect(getJazzyEffect());

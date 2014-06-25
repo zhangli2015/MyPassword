@@ -34,7 +34,7 @@ import cn.zdx.lib.annotation.XingAnnotationHelper;
  * @author zengdexing
  * 
  */
-public class MainAdapter extends BaseAdapter {
+public class PasswordListAdapter extends BaseAdapter {
 	private List<PasswordItem> passwords = new ArrayList<PasswordItem>();
 	private Context context;
 	private SimpleDateFormat simpleDateFormatYear = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -74,7 +74,7 @@ public class MainAdapter extends BaseAdapter {
 		return (int) (dipValue * scale + 0.5f);
 	}
 
-	public MainAdapter(Context context) {
+	public PasswordListAdapter(Context context) {
 		this.context = context;
 		padding = dip2px(6);
 	}

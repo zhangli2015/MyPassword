@@ -2,20 +2,29 @@ package cn.xing.mypassword.activity;
 
 import java.util.HashMap;
 
+import android.app.ActionBar;
 import android.app.AlertDialog.Builder;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import cn.xing.mypassword.R;
 import cn.xing.mypassword.app.BaseActivity;
@@ -23,6 +32,7 @@ import cn.xing.mypassword.dialog.ExportDialog;
 import cn.xing.mypassword.dialog.ImportDialog;
 import cn.xing.mypassword.model.SettingKey;
 import cn.xing.mypassword.service.Mainbinder;
+import cn.zdx.lib.annotation.FindViewById;
 
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
@@ -38,6 +48,19 @@ public class MainActivity extends BaseActivity {
 	private Mainbinder mainbinder;
 	private long lastBackKeyTime;
 
+	@FindViewById(R.id.drawer_layout)
+	private DrawerLayout drawerLayout;
+
+	/** 密码分组 */
+	@FindViewById(R.id.container)
+	private FrameLayout groupContainer;
+
+	/** 密码列表 */
+	@FindViewById(R.id.navigation_drawer)
+	private FrameLayout passwordContainer;
+
+	private ActionBarDrawerToggle mDrawerToggle;
+
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
@@ -47,19 +70,80 @@ public class MainActivity extends BaseActivity {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mainbinder = (Mainbinder) service;
+			initFragment();
 		}
+
 	};
+
+	private void initFragment() {
+		FragmentManager fragmentManager = getFragmentManager();
+
+		PasswordGroupFragment passwordGroupFragment = (PasswordGroupFragment) fragmentManager
+				.findFragmentByTag("PasswordGroupFragment");
+		if (passwordGroupFragment == null)
+			passwordGroupFragment = new PasswordGroupFragment();
+		passwordGroupFragment.setDataSource(mainbinder);
+
+		PasswordListFragment passwordListFragment = (PasswordListFragment) fragmentManager
+				.findFragmentByTag("PasswordListFragment");
+		if (passwordListFragment == null)
+			passwordListFragment = new PasswordListFragment();
+		passwordListFragment.setDataSource(mainbinder);
+
+		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+		fragmentTransaction.replace(R.id.navigation_drawer, passwordGroupFragment, "PasswordGroupFragment");
+		fragmentTransaction.replace(R.id.container, passwordListFragment, "PasswordListFragment");
+		fragmentTransaction.commitAllowingStateLoss();
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		initDrawer();
+
 		Intent intent = new Intent("cn.xing.mypassword");
 		this.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
 		// 友盟自动升级
 		UmengUpdateAgent.update(this);
+	}
+
+	private void initDrawer() {
+		drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setHomeButtonEnabled(true);
+
+		mDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, R.drawable.ic_drawer,
+				R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+			@Override
+			public void onDrawerOpened(View drawerView) {
+				super.onDrawerOpened(drawerView);
+				getActivity().invalidateOptionsMenu();
+			}
+
+			@Override
+			public void onDrawerClosed(View drawerView) {
+				super.onDrawerClosed(drawerView);
+				getActivity().invalidateOptionsMenu();
+			}
+		};
+
+		drawerLayout.post(new Runnable() {
+			@Override
+			public void run() {
+				mDrawerToggle.syncState();
+			}
+		});
+		drawerLayout.setDrawerListener(mDrawerToggle);
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 
 	@Override
@@ -77,6 +161,9 @@ public class MainActivity extends BaseActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		if (mDrawerToggle.onOptionsItemSelected(item)) {
+			return true;
+		}
 		int id = item.getItemId();
 		switch (id) {
 			case R.id.action_add_password:
@@ -139,8 +226,12 @@ public class MainActivity extends BaseActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		if (!drawerLayout.isDrawerOpen(passwordContainer)) {
+			getMenuInflater().inflate(R.menu.main, menu);
+			return true;
+		} else {
+			return super.onCreateOptionsMenu(menu);
+		}
 	}
 
 	@Override
