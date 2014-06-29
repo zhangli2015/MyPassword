@@ -43,6 +43,8 @@ public class PasswordListAdapter extends BaseAdapter {
 
 	private SimpleDateFormat simpleDateFormatMonth = new SimpleDateFormat("MM-dd", Locale.getDefault());
 
+	private String passwordGroup;
+
 	/** 一天含有的秒数 */
 	private static final long DAY = 1000 * 60 * 60 * 24;
 
@@ -228,6 +230,7 @@ public class PasswordListAdapter extends BaseAdapter {
 		private void onEditClick() {
 			Intent intent = new Intent(context, EditPasswordActivity.class);
 			intent.putExtra(EditPasswordActivity.ID, passwordItem.password.getId());
+			intent.putExtra(EditPasswordActivity.PASSWORD_GROUP, passwordGroup);
 			context.startActivity(intent);
 		}
 
@@ -332,6 +335,9 @@ public class PasswordListAdapter extends BaseAdapter {
 
 	public void onUpdatePassword(Password newPassword) {
 		boolean needSort = false;
+
+		boolean hasFind = false;
+
 		for (int i = 0; i < passwords.size(); i++) {
 			Password oldPassword = passwords.get(i).password;
 			if (oldPassword.getId() == newPassword.getId()) {
@@ -349,11 +355,24 @@ public class PasswordListAdapter extends BaseAdapter {
 					oldPassword.setTop(newPassword.isTop());
 					needSort = true;
 				}
+				if (!oldPassword.getGroupName().equals(newPassword.getGroupName()))
+					passwords.remove(i);
+				hasFind = true;
 				break;
 			}
 		}
+
+		if (!hasFind) {
+			passwords.add(0, new PasswordItem(newPassword));
+			needSort = true;
+		}
+
 		if (needSort)
 			Collections.sort(this.passwords, comparator);
 		notifyDataSetChanged();
+	}
+
+	public void setPasswordGroup(String passwordGroup) {
+		this.passwordGroup = passwordGroup;
 	}
 }

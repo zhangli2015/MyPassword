@@ -24,9 +24,9 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 import cn.xing.mypassword.R;
+import cn.xing.mypassword.activity.PasswordGroupFragment.OnPasswordGroupSelected;
 import cn.xing.mypassword.app.BaseActivity;
 import cn.xing.mypassword.dialog.ExportDialog;
 import cn.xing.mypassword.dialog.ImportDialog;
@@ -51,15 +51,22 @@ public class MainActivity extends BaseActivity {
 	@FindViewById(R.id.drawer_layout)
 	private DrawerLayout drawerLayout;
 
-	/** 密码分组 */
-	@FindViewById(R.id.container)
-	private FrameLayout groupContainer;
-
-	/** 密码列表 */
-	@FindViewById(R.id.navigation_drawer)
-	private FrameLayout passwordContainer;
-
 	private ActionBarDrawerToggle mDrawerToggle;
+
+	private PasswordListFragment passwordListFragment;
+	private PasswordGroupFragment passwordGroupFragment;
+
+	@FindViewById(R.id.navigation_drawer)
+	private View drawerView;
+
+	private OnPasswordGroupSelected onPasswordGroupSelected = new OnPasswordGroupSelected() {
+		@Override
+		public void onPasswordGroupSelected(String passwordGroupName) {
+			drawerLayout.closeDrawer(drawerView);
+			if (passwordListFragment != null)
+				passwordListFragment.showPasswordGroup(passwordGroupName);
+		}
+	};
 
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 		@Override
@@ -78,17 +85,15 @@ public class MainActivity extends BaseActivity {
 	private void initFragment() {
 		FragmentManager fragmentManager = getFragmentManager();
 
-		PasswordGroupFragment passwordGroupFragment = (PasswordGroupFragment) fragmentManager
-				.findFragmentByTag("PasswordGroupFragment");
-		if (passwordGroupFragment == null)
-			passwordGroupFragment = new PasswordGroupFragment();
-		passwordGroupFragment.setDataSource(mainbinder);
-
-		PasswordListFragment passwordListFragment = (PasswordListFragment) fragmentManager
-				.findFragmentByTag("PasswordListFragment");
+		passwordListFragment = (PasswordListFragment) fragmentManager.findFragmentByTag("PasswordListFragment");
 		if (passwordListFragment == null)
 			passwordListFragment = new PasswordListFragment();
 		passwordListFragment.setDataSource(mainbinder);
+
+		passwordGroupFragment = (PasswordGroupFragment) fragmentManager.findFragmentByTag("PasswordGroupFragment");
+		if (passwordGroupFragment == null)
+			passwordGroupFragment = new PasswordGroupFragment();
+		passwordGroupFragment.setDataSource(mainbinder, onPasswordGroupSelected);
 
 		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 		fragmentTransaction.replace(R.id.navigation_drawer, passwordGroupFragment, "PasswordGroupFragment");
@@ -98,7 +103,7 @@ public class MainActivity extends BaseActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+		super.onCreate(null);
 		setContentView(R.layout.activity_main);
 
 		initDrawer();
@@ -115,19 +120,24 @@ public class MainActivity extends BaseActivity {
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setHomeButtonEnabled(true);
-
 		mDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, R.drawable.ic_drawer,
 				R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 			@Override
 			public void onDrawerOpened(View drawerView) {
 				super.onDrawerOpened(drawerView);
 				getActivity().invalidateOptionsMenu();
+				getActionBar().setTitle(R.string.app_name);
 			}
 
 			@Override
 			public void onDrawerClosed(View drawerView) {
 				super.onDrawerClosed(drawerView);
 				getActivity().invalidateOptionsMenu();
+				if (passwordListFragment != null && !passwordListFragment.getPasswordGroupName().equals(""))
+					getActionBar().setTitle(passwordListFragment.getPasswordGroupName());
+				else {
+					getActionBar().setTitle(R.string.app_name);
+				}
 			}
 		};
 
@@ -138,6 +148,16 @@ public class MainActivity extends BaseActivity {
 			}
 		});
 		drawerLayout.setDrawerListener(mDrawerToggle);
+
+		if (getSetting(SettingKey.IS_SHOWED_DRAWER, "false").equals("false")) {
+			putSetting(SettingKey.IS_SHOWED_DRAWER, "true");
+			drawerLayout.openDrawer(drawerView);
+		} else {
+			String lastGroupName = getSetting(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME, "");
+			if (lastGroupName.equals(""))
+				lastGroupName = getString(R.string.app_name);
+			getActionBar().setTitle(lastGroupName);
+		}
 	}
 
 	@Override
@@ -167,7 +187,12 @@ public class MainActivity extends BaseActivity {
 		int id = item.getItemId();
 		switch (id) {
 			case R.id.action_add_password:
-				startActivity(new Intent(this, EditPasswordActivity.class));
+				if (mainbinder == null)
+					break;
+				Intent intent = new Intent(this, EditPasswordActivity.class);
+				if (passwordListFragment != null)
+					intent.putExtra(EditPasswordActivity.PASSWORD_GROUP, passwordListFragment.getPasswordGroupName());
+				startActivity(intent);
 				break;
 
 			case R.id.action_import:
@@ -226,7 +251,7 @@ public class MainActivity extends BaseActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if (!drawerLayout.isDrawerOpen(passwordContainer)) {
+		if (!drawerLayout.isDrawerOpen(drawerView)) {
 			getMenuInflater().inflate(R.menu.main, menu);
 			return true;
 		} else {

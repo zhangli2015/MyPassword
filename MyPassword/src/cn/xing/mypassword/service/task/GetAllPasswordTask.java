@@ -8,30 +8,32 @@ import cn.xing.mypassword.model.AsyncSingleTask;
 import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.service.OnGetAllPasswordCallback;
 
-public class GetAllPasswordTask extends AsyncSingleTask<List<Password>>
-{
+public class GetAllPasswordTask extends AsyncSingleTask<List<Password>> {
 	private PasswordDatabase passwordDatabase;
 	private OnGetAllPasswordCallback onGetAllPasswordCallback;
+	private String groupName;
 
-	public GetAllPasswordTask(PasswordDatabase passwordDatabase,
-			OnGetAllPasswordCallback onGetAllPasswordCallback)
-	{
+	public GetAllPasswordTask(PasswordDatabase passwordDatabase, OnGetAllPasswordCallback onGetAllPasswordCallback,
+			String groupName) {
 		this.passwordDatabase = passwordDatabase;
 		this.onGetAllPasswordCallback = onGetAllPasswordCallback;
+		this.groupName = groupName;
 	}
 
 	@Override
-	protected AsyncResult<List<Password>> doInBackground(AsyncResult<List<Password>> asyncResult)
-	{
-		List<Password> passwords = passwordDatabase.getAllPassword();
+	protected AsyncResult<List<Password>> doInBackground(AsyncResult<List<Password>> asyncResult) {
+		List<Password> passwords;
+		if (groupName == null)
+			passwords = passwordDatabase.getAllPassword();
+		else
+			passwords = passwordDatabase.getAllPasswordByGroupName(groupName);
 		asyncResult.setData(passwords);
 		return asyncResult;
 	}
 
 	@Override
-	protected void runOnUIThread(AsyncResult<List<Password>> asyncResult)
-	{
-		onGetAllPasswordCallback.onGetAllPassword(asyncResult.getData());
+	protected void runOnUIThread(AsyncResult<List<Password>> asyncResult) {
+		onGetAllPasswordCallback.onGetAllPassword(groupName, asyncResult.getData());
 	}
 
 }

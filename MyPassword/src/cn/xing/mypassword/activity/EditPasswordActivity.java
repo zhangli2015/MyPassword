@@ -17,16 +17,23 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 import cn.xing.mypassword.R;
 import cn.xing.mypassword.app.BaseActivity;
 import cn.xing.mypassword.model.Password;
+import cn.xing.mypassword.model.PasswordGroup;
 import cn.xing.mypassword.service.Mainbinder;
 import cn.xing.mypassword.service.OnGetAllPasswordCallback;
+import cn.xing.mypassword.service.OnGetAllPasswordGroupCallback;
 import cn.xing.mypassword.service.OnGetPasswordCallback;
 import cn.zdx.lib.annotation.FindViewById;
 
@@ -36,9 +43,11 @@ import cn.zdx.lib.annotation.FindViewById;
  * @author zengdexing
  * 
  */
-public class EditPasswordActivity extends BaseActivity implements OnGetPasswordCallback, OnGetAllPasswordCallback {
+public class EditPasswordActivity extends BaseActivity implements OnGetPasswordCallback, OnGetAllPasswordCallback,
+		OnGetAllPasswordGroupCallback {
 	/** 传入参数 ID */
 	public static final String ID = "password_id";
+	public static final String PASSWORD_GROUP = "password_group";
 	/** 添加模式 */
 	private static final int MODE_ADD = 0;
 	/** 修改模式 */
@@ -67,6 +76,11 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 	@FindViewById(R.id.is_top)
 	private CheckBox isTopView;
 
+	@FindViewById(R.id.editview_spinner)
+	private Spinner spinner;
+
+	private String passwordGroup;
+
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
@@ -81,6 +95,7 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 			}
 			// 获得所有密码、用户名，用于自动完成
 			mainbinder.getAllPassword(EditPasswordActivity.this);
+			mainbinder.getAllPasswordGroup(EditPasswordActivity.this);
 		}
 	};
 
@@ -93,6 +108,12 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 			MODE = MODE_ADD;
 		} else {
 			MODE = MODE_MODIFY;
+		}
+
+		passwordGroup = getIntent().getStringExtra(PASSWORD_GROUP);
+
+		if (passwordGroup == null || passwordGroup.equals("")) {
+			passwordGroup = getString(R.string.password_group_default_name);
 		}
 
 		initActionBar();
@@ -171,6 +192,7 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 			password.setPassword(passwordView.getText().toString().trim());
 			password.setNote(noteView.getText().toString().trim());
 			password.setTop(isTopView.isChecked());
+			password.setGroupName(passwordGroup);
 			if (MODE == MODE_ADD) {
 				// 添加
 				password.setCreateDate(System.currentTimeMillis());
@@ -200,7 +222,7 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 	}
 
 	@Override
-	public void onGetAllPassword(List<Password> passwords) {
+	public void onGetAllPassword(String groupName, List<Password> passwords) {
 		// 去掉重复
 		Set<String> arrays = new HashSet<String>();
 		for (int i = 0; i < passwords.size(); i++) {
@@ -214,5 +236,43 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 		ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, id, new ArrayList<String>(arrays));
 		nameView.setAdapter(arrayAdapter);
 		passwordView.setAdapter(arrayAdapter);
+	}
+
+	@Override
+	public void onGetAllPasswordGroup(List<PasswordGroup> passwordGroups) {
+		List<String> arrays = new ArrayList<String>();
+
+		for (int i = 0; i < passwordGroups.size(); i++) {
+			PasswordGroup passwordGroup = passwordGroups.get(i);
+			arrays.add(passwordGroup.getGroupName());
+		}
+
+		if (!arrays.contains(passwordGroup))
+			arrays.add(passwordGroup);
+
+		int position = 0;
+		for (String passwordGroupName : arrays) {
+			if (passwordGroupName.equals(passwordGroup))
+				break;
+			position++;
+		}
+
+		int id = R.layout.simple_dropdown_item;
+		SpinnerAdapter spinnerAdapter = new ArrayAdapter<String>(this, id, new ArrayList<String>(arrays));
+
+		spinner.setAdapter(spinnerAdapter);
+
+		spinner.setSelection(position);
+		spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+				passwordGroup = (String) parent.getItemAtPosition(position);
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+
+			}
+		});
 	}
 }

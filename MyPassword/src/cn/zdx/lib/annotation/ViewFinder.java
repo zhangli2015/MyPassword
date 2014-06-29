@@ -4,6 +4,7 @@
 package cn.zdx.lib.annotation;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.view.View;
 
 /**
@@ -20,6 +21,24 @@ public abstract class ViewFinder {
 
 	public static ViewFinder create(final View view) {
 		return new ViewViewFinder(view);
+	}
+
+	public static ViewFinder create(final Dialog dialog) {
+		return new DialogViewFinder(dialog);
+	}
+
+	public static class DialogViewFinder extends ViewFinder {
+		private Dialog dialog;
+
+		public DialogViewFinder(Dialog activity) {
+			super();
+			this.dialog = activity;
+		}
+
+		@Override
+		public View findViewById(int id) {
+			return dialog.findViewById(id);
+		}
 	}
 
 	public static class ActivityViewFinder extends ViewFinder {

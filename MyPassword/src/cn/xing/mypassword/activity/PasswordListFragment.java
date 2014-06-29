@@ -41,8 +41,19 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 	/** 没有数据的提示框 */
 	private View noDataView;
 
+	private String passwordGroupName;
+
 	public void setDataSource(Mainbinder mainbinder) {
 		this.mainbinder = mainbinder;
+	}
+
+	public void showPasswordGroup(String passwordGroupName) {
+		this.passwordGroupName = passwordGroupName;
+		mainbinder.getAllPassword(this, passwordGroupName);
+	}
+
+	public String getPasswordGroupName() {
+		return passwordGroupName;
 	}
 
 	@Override
@@ -50,8 +61,9 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 		super.onCreate(savedInstanceState);
 		mainAdapter = new PasswordListAdapter(getActivity());
 		getBaseActivity().getMyApplication().registOnSettingChangeListener(SettingKey.JAZZY_EFFECT, this);
-
-		mainbinder.getAllPassword(this);
+		mainbinder.registOnPasswordListener(this);
+		showPasswordGroup(getBaseActivity().getSetting(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME,
+				getString(R.string.password_group_default_name)));
 	}
 
 	/**
@@ -118,9 +130,12 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 	}
 
 	@Override
-	public void onGetAllPassword(List<Password> passwords) {
-		mainAdapter.setData(passwords, mainbinder);
-		initView();
+	public void onGetAllPassword(String groupName, List<Password> passwords) {
+		if (passwordGroupName.equals(groupName)) {
+			mainAdapter.setPasswordGroup(passwordGroupName);
+			mainAdapter.setData(passwords, mainbinder);
+			initView();
+		}
 	}
 
 	@Override
@@ -135,8 +150,10 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 
 	@Override
 	public void onNewPassword(Password password) {
-		mainAdapter.onNewPassword(password);
-		initView();
+		if (password.getGroupName().equals(passwordGroupName)) {
+			mainAdapter.onNewPassword(password);
+			initView();
+		}
 	}
 
 	@Override
@@ -148,6 +165,7 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 	@Override
 	public void onUpdatePassword(Password newPassword) {
 		mainAdapter.onUpdatePassword(newPassword);
+		initView();
 	}
 
 	@Override
@@ -155,6 +173,7 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 		switch (v.getId()) {
 			case R.id.main_no_passsword:
 				Intent intent = new Intent(getActivity(), EditPasswordActivity.class);
+				intent.putExtra(EditPasswordActivity.PASSWORD_GROUP, passwordGroupName);
 				getActivity().startActivity(intent);
 				break;
 			default:

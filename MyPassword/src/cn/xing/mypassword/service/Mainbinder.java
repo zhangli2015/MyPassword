@@ -9,11 +9,17 @@ import cn.xing.mypassword.database.PasswordDatabase;
 import cn.xing.mypassword.model.AsyncResult;
 import cn.xing.mypassword.model.AsyncSingleTask;
 import cn.xing.mypassword.model.Password;
+import cn.xing.mypassword.model.PasswordGroup;
 import cn.xing.mypassword.service.task.GetAllPasswordTask;
 
 public class Mainbinder extends Binder {
 	private PasswordDatabase passwordDatabase;
+	
+	/** 密码变化监听器 */
 	private List<OnPasswordListener> onPasswordListeners = new ArrayList<OnPasswordListener>();
+
+	/** 密码分组变化监听 */
+	private List<OnPasswordGroupListener> onPasswordGroupListeners = new ArrayList<OnPasswordGroupListener>();
 
 	public Mainbinder(Context context) {
 		passwordDatabase = new PasswordDatabase(context);
@@ -30,6 +36,34 @@ public class Mainbinder extends Binder {
 			@Override
 			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
 				onPasswordListeners.clear();
+			}
+		}.execute();
+	}
+
+	public void registOnPasswordGroupListener(final OnPasswordGroupListener onPasswordGroupListener) {
+		new AsyncSingleTask<Void>() {
+			@Override
+			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
+				return asyncResult;
+			}
+
+			@Override
+			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
+				onPasswordGroupListeners.add(onPasswordGroupListener);
+			}
+		}.execute();
+	}
+
+	public void unregistOnPasswordGroupListener(final OnPasswordGroupListener onPasswordGroupListener) {
+		new AsyncSingleTask<Void>() {
+			@Override
+			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
+				return asyncResult;
+			}
+
+			@Override
+			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
+				onPasswordGroupListeners.remove(onPasswordGroupListener);
 			}
 		}.execute();
 	}
@@ -62,8 +96,14 @@ public class Mainbinder extends Binder {
 		}.execute();
 	}
 
+	public void getAllPassword(OnGetAllPasswordCallback onGetAllPasswordCallback, String groupName) {
+		GetAllPasswordTask getAllPasswordTask = new GetAllPasswordTask(passwordDatabase, onGetAllPasswordCallback,
+				groupName);
+		getAllPasswordTask.execute();
+	}
+
 	public void getAllPassword(OnGetAllPasswordCallback onGetAllPasswordCallback) {
-		GetAllPasswordTask getAllPasswordTask = new GetAllPasswordTask(passwordDatabase, onGetAllPasswordCallback);
+		GetAllPasswordTask getAllPasswordTask = new GetAllPasswordTask(passwordDatabase, onGetAllPasswordCallback, null);
 		getAllPasswordTask.execute();
 	}
 
@@ -131,6 +171,25 @@ public class Mainbinder extends Binder {
 		new AsyncSingleTask<Password>() {
 			@Override
 			protected AsyncResult<Password> doInBackground(AsyncResult<Password> asyncResult) {
+				String newGroupName = password.getGroupName();
+
+				boolean isNew = true;
+				List<PasswordGroup> passwordGroups = passwordDatabase.getAllPasswordGroup();
+				for (int i = 0; i < passwordGroups.size(); i++) {
+					PasswordGroup passwordGroup = passwordGroups.get(i);
+					if (passwordGroup.getGroupName().equals(newGroupName)) {
+						isNew = false;
+						break;
+					}
+				}
+
+				if (isNew) {
+					PasswordGroup passwordGroup = new PasswordGroup();
+					passwordGroup.setGroupName(newGroupName);
+					passwordDatabase.addPasswordGroup(passwordGroup);
+				}
+				asyncResult.getBundle().putBoolean("isNew", isNew);
+
 				int result = (int) passwordDatabase.insertPassword(password);
 				password.setId(result);
 				asyncResult.setData(password);
@@ -139,9 +198,97 @@ public class Mainbinder extends Binder {
 
 			@Override
 			protected void runOnUIThread(AsyncResult<Password> asyncResult) {
+				if (asyncResult.getBundle().getBoolean("isNew")) {
+					PasswordGroup passwordGroup = new PasswordGroup();
+					passwordGroup.setGroupName(asyncResult.getData().getGroupName());
+
+					for (OnPasswordGroupListener onPasswordGroupListener : onPasswordGroupListeners) {
+						onPasswordGroupListener.onNewPasswordGroup(passwordGroup);
+					}
+				}
+
 				for (OnPasswordListener onPasswordListener : onPasswordListeners) {
 					onPasswordListener.onNewPassword(asyncResult.getData());
 				}
+			}
+		}.execute();
+	}
+
+	public void insertPasswordGroup(final PasswordGroup passwordGroup) {
+		new AsyncSingleTask<PasswordGroup>() {
+			@Override
+			protected AsyncResult<PasswordGroup> doInBackground(AsyncResult<PasswordGroup> asyncResult) {
+				String newGroupName = passwordGroup.getGroupName();
+
+				boolean isNew = true;
+				List<PasswordGroup> passwordGroups = passwordDatabase.getAllPasswordGroup();
+				for (int i = 0; i < passwordGroups.size(); i++) {
+					PasswordGroup passwordGroup = passwordGroups.get(i);
+					if (passwordGroup.getGroupName().equals(newGroupName)) {
+						isNew = false;
+						break;
+					}
+				}
+
+				if (isNew) {
+					PasswordGroup passwordGroup = new PasswordGroup();
+					passwordGroup.setGroupName(newGroupName);
+					passwordDatabase.addPasswordGroup(passwordGroup);
+				}
+				asyncResult.getBundle().putBoolean("isNew", isNew);
+				asyncResult.setData(passwordGroup);
+				return asyncResult;
+			}
+
+			@Override
+			protected void runOnUIThread(AsyncResult<PasswordGroup> asyncResult) {
+				if (asyncResult.getBundle().getBoolean("isNew")) {
+					for (OnPasswordGroupListener onPasswordGroupListener : onPasswordGroupListeners) {
+						onPasswordGroupListener.onNewPasswordGroup(asyncResult.getData());
+					}
+				}
+			}
+		}.execute();
+	}
+
+	/**
+	 * 删除密码分组，包括密码分住下的所有密码都会被删除
+	 * 
+	 * @param passwordGroupName
+	 *            分组名
+	 */
+	public void deletePasswordgroup(final String passwordGroupName) {
+		new AsyncSingleTask<Void>() {
+			@Override
+			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
+				int count = passwordDatabase.deletePasswordGroup(passwordGroupName);
+				asyncResult.setResult(count);
+				return asyncResult;
+			}
+
+			@Override
+			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
+				if (asyncResult.getResult() > 0) {
+					for (OnPasswordGroupListener onPasswordGroupListener : onPasswordGroupListeners) {
+						onPasswordGroupListener.onDeletePasswordGroup(passwordGroupName);
+					}
+				}
+			}
+		}.execute();
+	}
+
+	public void getAllPasswordGroup(final OnGetAllPasswordGroupCallback onGetAllPasswordGroupCallback) {
+		new AsyncSingleTask<List<PasswordGroup>>() {
+			@Override
+			protected AsyncResult<List<PasswordGroup>> doInBackground(AsyncResult<List<PasswordGroup>> asyncResult) {
+				List<PasswordGroup> list = passwordDatabase.getAllPasswordGroup();
+				asyncResult.setData(list);
+				return asyncResult;
+			}
+
+			@Override
+			protected void runOnUIThread(AsyncResult<List<PasswordGroup>> asyncResult) {
+				onGetAllPasswordGroupCallback.onGetAllPasswordGroup(asyncResult.getData());
 			}
 		}.execute();
 	}

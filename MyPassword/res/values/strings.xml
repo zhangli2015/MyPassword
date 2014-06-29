@@ -8,6 +8,7 @@
     <string name="user_name">账号：</string>
     <string name="title">标题：</string>
     <string name="password">密码：</string>
+    <string name="password_group">分组：</string>
     <string name="isTop">置顶</string>
     <string name="updata">修改</string>
     <string name="delete">删除</string>
@@ -64,7 +65,7 @@
     <string name="set_lock_pattern_second_step_error">图案与上次不一致，请重新绘制</string>
     <string name="set_lock_pattern_second_step_tips">设置成功，请牢记您的解锁图案</string>
     <string name="set_lock_pattern_step_tips">完成后松开手指</string>
-    <string name="no_password_tips">您还没有保存过密码\n点击右上角图标增加几个吧</string>
+    <string name="no_password_tips">还没有保存密码\n点击右上角的\"+\"添加几个吧</string>
     <string name="toast_key_back">再按一次 退出程序</string>
     <string name="import_form_sd">从SD卡导入</string>
     <string name="export_to_sd">导出到SD卡</string>
@@ -87,5 +88,14 @@
     <string name="package_name">cn.xing.mypassword</string>
     <string name="password_group_title">密码分组</string>
     <string name="password_group_add">添加分组</string>
+    <string name="password_group_default_name">默认</string>
+    <string name="delete_password_group_title">删除密码分组</string>
+    <string name="delete_password_group_message">将删除\"%s\"分组下的所有密码，不可恢复，你确定删除吗？</string>
+    <string name="delete_password_add">添加分组</string>
+    <string name="delete_password_sure">确 定</string>
+    <string name="delete_password_cancle">取 消</string>
+    <string name="add_password_group_cancle">取 消</string>
+    <string name="add_password_group_sure">确 定</string>
+    <string name="add_password_group_hint">输入分组名</string>
 
 </resources>

@@ -8,14 +8,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import cn.xing.mypassword.R;
+import cn.xing.mypassword.app.MyApplication;
 import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.model.PasswordGroup;
+import cn.xing.mypassword.model.SettingKey;
 
 public class PasswordDatabase extends SQLiteOpenHelper {
 	private static final int version = 3;
+	private Context context;
 
 	public PasswordDatabase(Context context) {
 		super(context, "password", null, version);
+		this.context = context;
 	}
 
 	@Override
@@ -27,8 +32,13 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 
 	private void createPasswordTable(SQLiteDatabase db) {
 		String sql = "create table password(id integer primary key autoincrement, create_date integer, title text, "
-				+ "user_name text, password text, is_top integer default 0, note text, group_name text default 'д╛хо')";
+				+ "user_name text, password text, is_top integer default 0, note text, group_name text default '"
+				+ getDefaultGroupName() + "')";
 		db.execSQL(sql);
+	}
+
+	private String getDefaultGroupName() {
+		return context.getString(R.string.password_group_default_name);
 	}
 
 	private void createGroupTable(SQLiteDatabase db) {
@@ -36,8 +46,13 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 		sql = "create table password_group(name text primary key)";
 		db.execSQL(sql);
 
-		sql = "insert into password_group(name) values('д╛хо')";
+		sql = "insert into password_group(name) values('" + getDefaultGroupName() + "')";
 		db.execSQL(sql);
+		getMyApplication().putString(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME, getDefaultGroupName());
+	}
+
+	private MyApplication getMyApplication() {
+		return (MyApplication) context.getApplicationContext();
 	}
 
 	/**
@@ -57,7 +72,7 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 		}
 
 		if (oldVersion < 3) {
-			String sql = "alter table password add group_name text default 'д╛хо'";
+			String sql = "alter table password add group_name text default '" + getDefaultGroupName() + "'";
 			db.execSQL(sql);
 
 			createGroupTable(db);
@@ -164,8 +179,7 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 	}
 
 	private Password mapPassword(Cursor cursor) {
-		Password password;
-		password = new Password();
+		Password password = new Password();
 		password.setId(cursor.getInt(cursor.getColumnIndex("id")));
 		password.setCreateDate(cursor.getLong(cursor.getColumnIndex("create_date")));
 		password.setTitle(cursor.getString(cursor.getColumnIndex("title")));
@@ -237,8 +251,8 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 		Cursor cursor = null;
 
 		try {
-			cursor = sqLiteDatabase.query("password", null, "where group_name = ?", new String[] { groupName }, null,
-					null, null);
+			cursor = sqLiteDatabase.query("password", null, "group_name = ?", new String[] { groupName }, null, null,
+					null);
 
 			while (cursor.moveToNext()) {
 				Password password = null;
@@ -299,9 +313,13 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 		return passwordGroups;
 	}
 
-	public void updataGroupName(String oldName, String newName) {
+	public int deletePasswordGroup(String passwordGroupName) {
 		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
-		sqLiteDatabase.execSQL("update password_group set name = ? where name = ?", new String[] { newName, oldName });
-		sqLiteDatabase.execSQL("update password set name = ? where name = ?", new String[] { newName, oldName });
+		int count;
+		count = sqLiteDatabase.delete("password_group", "name = ?", new String[] { passwordGroupName });
+		if (count > 0) {
+			sqLiteDatabase.delete("password", "group_name = ?", new String[] { passwordGroupName });
+		}
+		return count;
 	}
 }
