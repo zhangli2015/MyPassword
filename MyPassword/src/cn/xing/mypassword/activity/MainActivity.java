@@ -19,12 +19,10 @@ import android.os.IBinder;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import cn.xing.mypassword.R;
 import cn.xing.mypassword.activity.PasswordGroupFragment.OnPasswordGroupSelected;
 import cn.xing.mypassword.app.BaseActivity;
@@ -225,11 +223,7 @@ public class MainActivity extends BaseActivity {
 				break;
 			case R.id.action_about:
 				// 关于
-				onAboutClick();
-				break;
-			case R.id.action_feedback:
-				// 意见反馈
-				onFeedbackClick();
+				startActivity(new Intent(this, AboutActivity.class));
 				break;
 			case R.id.action_exit:
 				// 退出
@@ -240,13 +234,6 @@ public class MainActivity extends BaseActivity {
 				break;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	/**
-	 * 意见反馈
-	 */
-	private void onFeedbackClick() {
-		startActivity(new Intent(this, FeedbackActivity.class));
 	}
 
 	@Override
@@ -315,21 +302,5 @@ public class MainActivity extends BaseActivity {
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("effect", effect);
 		MobclickAgent.onEvent(getActivity(), "effect", map);
-	}
-
-	/**
-	 * 关于对话框
-	 */
-	private void onAboutClick() {
-		Builder builder = new Builder(getActivity());
-		builder.setTitle(R.string.action_about_us);
-		builder.setNeutralButton(R.string.common_sure, null);
-		String message = getString(R.string.drawer_about_detail, getMyApplication().getVersionName());
-		TextView textView = new TextView(getActivity());
-		textView.setGravity(Gravity.CENTER);
-		textView.setText(message);
-		textView.setTextSize(18);
-		builder.setView(textView);
-		builder.show();
 	}
 }

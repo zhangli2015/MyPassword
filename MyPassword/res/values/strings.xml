@@ -40,7 +40,6 @@
     <string name="feedback_sending">正在发送，请稍候&#8230;</string>
     <string name="feedback_send_failed">发送失败，请稍候再试</string>
     <string name="feedback_thanks">非常感谢您的反馈</string>
-    <string name="action_about_us">关 于</string>
     <string name="action_exit">退 出</string>
     <string name="alert_delete_message">删除后不可恢复，您确定吗？</string>
     <string name="yes">是</string>
@@ -51,8 +50,7 @@
     <string name="add_password_name_hint">输入您的账号</string>
     <string name="add_password_password_hint">输入您的密码</string>
     <string name="add_password_save_no_data">标题不可为空</string>
-    <string name="copyright_description">Copyright © 2014 zengdexing.\nAll Rights Reserved.</string>
-    <string name="drawer_about_detail">mail@zengdexing.com\nVersion: %s\nCopyright © 2014 zengdexing.\nAll Rights Reserved.</string>
+    <string name="copyright_description">Copyright © 2014 zengdexing.com.\nAll Rights Reserved.</string>
     <string name="lock_pattern_error">图案错误</string>
     <string name="set_lock_pattern_first_message">亲爱的用户，您好！第一次使用软件，为了安全，您需要绘制一个解锁图案用于登录</string>
     <string name="set_lock_pattern_first_sure">确 定</string>

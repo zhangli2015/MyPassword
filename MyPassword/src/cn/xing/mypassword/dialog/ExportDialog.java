@@ -26,7 +26,6 @@ import cn.xing.mypassword.service.OnGetAllPasswordCallback;
  * 密码导出对话框
  * 
  * @author zengdexing
- * 
  */
 public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCallback {
 	private Mainbinder mainbinder;

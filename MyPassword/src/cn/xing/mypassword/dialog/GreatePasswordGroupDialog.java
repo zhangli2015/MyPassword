@@ -25,6 +25,7 @@ public class GreatePasswordGroupDialog extends Dialog {
 
 	@FindViewById(R.id.add_password_group_sure_btn)
 	private View sureButton;
+	
 	@FindViewById(R.id.container)
 	private View container;;
 

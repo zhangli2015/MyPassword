@@ -135,6 +135,8 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 			mainAdapter.setPasswordGroup(passwordGroupName);
 			mainAdapter.setData(passwords, mainbinder);
 			initView();
+			if (listView != null)
+				listView.setSelection(0);
 		}
 	}
 
