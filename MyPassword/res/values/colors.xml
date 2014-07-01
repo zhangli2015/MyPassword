@@ -10,5 +10,7 @@
     <color name="name_color">#F65EA5</color>
     <color name="white">#FFFFFF</color>
     <color name="item_function_bg_pressed">#7050B3FA</color>
+    <color name="item_group_bg_pressed">#555555</color>
+    <color name="item_group_divider">#404040</color>
 
 </resources>

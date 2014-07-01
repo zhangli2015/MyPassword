@@ -8,37 +8,74 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import cn.xing.mypassword.R;
+import cn.xing.mypassword.app.MyApplication;
 import cn.xing.mypassword.model.Password;
+import cn.xing.mypassword.model.PasswordGroup;
+import cn.xing.mypassword.model.SettingKey;
 
-public class PasswordDatabase extends SQLiteOpenHelper
-{
-	private static final int version = 2;
+public class PasswordDatabase extends SQLiteOpenHelper {
+	private static final int version = 3;
+	private Context context;
 
-	public PasswordDatabase(Context context)
-	{
+	public PasswordDatabase(Context context) {
 		super(context, "password", null, version);
+		this.context = context;
 	}
 
 	@Override
-	public void onCreate(SQLiteDatabase db)
-	{
-		String sql = "create table password(" + "id integer primary key autoincrement, " + "create_date integer, "
-				+ "title text, " + "user_name text, " + "password text, " + "is_top integer default 0, " + "note text)";
+	public void onCreate(SQLiteDatabase db) {
+		createPasswordTable(db);
+
+		createGroupTable(db);
+	}
+
+	private void createPasswordTable(SQLiteDatabase db) {
+		String sql = "create table password(id integer primary key autoincrement, create_date integer, title text, "
+				+ "user_name text, password text, is_top integer default 0, note text, group_name text default '"
+				+ getDefaultGroupName() + "')";
 		db.execSQL(sql);
 	}
 
+	private String getDefaultGroupName() {
+		return context.getString(R.string.password_group_default_name);
+	}
+
+	private void createGroupTable(SQLiteDatabase db) {
+		String sql;
+		sql = "create table password_group(name text primary key)";
+		db.execSQL(sql);
+
+		sql = "insert into password_group(name) values('" + getDefaultGroupName() + "')";
+		db.execSQL(sql);
+		getMyApplication().putString(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME, getDefaultGroupName());
+	}
+
+	private MyApplication getMyApplication() {
+		return (MyApplication) context.getApplicationContext();
+	}
+
 	/**
-	 * 1 ---> 初始版本，含有一个表password（id， create_date， title， user_name，password，
-	 * note）<br />
+	 * <p>
+	 * 1 ---> 初始版本，含有一个表password(id, create_date, title, user_name,
+	 * password，note)
+	 * <p>
 	 * 2 ---> password表添加is_top字段，默认值为零，表示不置顶
+	 * <p>
+	 * 4 --->password表添加group_name字段，表示分组，默认值：默认；增加group(name)表，增加分组功能
 	 */
 	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-	{
-		if (oldVersion < 2)
-		{
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion < 2) {
 			String sql = "alter table password add is_top integer default 0";
 			db.execSQL(sql);
+		}
+
+		if (oldVersion < 3) {
+			String sql = "alter table password add group_name text default '" + getDefaultGroupName() + "'";
+			db.execSQL(sql);
+
+			createGroupTable(db);
 		}
 	}
 
@@ -49,11 +86,9 @@ public class PasswordDatabase extends SQLiteOpenHelper
 	 *            要插入的值
 	 * @return 返回这条数据的自增主键 如果插入失败，返回-1
 	 */
-	public long insertPassword(Password password)
-	{
+	public long insertPassword(Password password) {
 		long id = -1;
-		try
-		{
+		try {
 			SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 			ContentValues contentValues = new ContentValues();
 			contentValues.put("create_date", password.getCreateDate());
@@ -62,10 +97,9 @@ public class PasswordDatabase extends SQLiteOpenHelper
 			contentValues.put("password", password.getPassword());
 			contentValues.put("note", password.getNote());
 			contentValues.put("is_top", password.isTop() ? 1 : 0);
+			contentValues.put("group_name", password.getGroupName());
 			id = sqLiteDatabase.insert("password", null, contentValues);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return id;
@@ -86,12 +120,10 @@ public class PasswordDatabase extends SQLiteOpenHelper
 	 *            更新的数据，只需要设置相应的更新项,必须有id属性
 	 * @return 影响的行数 the number of rows affected
 	 */
-	public int updatePassword(Password password)
-	{
+	public int updatePassword(Password password) {
 		int result = 0;
 		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
-		try
-		{
+		try {
 			ContentValues contentValues = new ContentValues();
 			if (password.getCreateDate() != 0)
 				contentValues.put("create_date", password.getCreateDate());
@@ -104,11 +136,13 @@ public class PasswordDatabase extends SQLiteOpenHelper
 			if (password.getNote() != null)
 				contentValues.put("note", password.getNote());
 			contentValues.put("is_top", password.isTop() ? 1 : 0);
+
+			if (password.getGroupName() != null)
+				contentValues.put("group_name", password.getGroupName());
+
 			result = sqLiteDatabase.update("password", contentValues, "id = ?",
 					new String[] { String.valueOf(password.getId()) });
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
@@ -121,41 +155,39 @@ public class PasswordDatabase extends SQLiteOpenHelper
 	 * @param id
 	 * @return 查询到密码信息，如果没有该数据，返回null
 	 */
-	public Password getPassword(int id)
-	{
+	public Password getPassword(int id) {
 		Password password = null;
 
 		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 		Cursor cursor = null;
-		try
-		{
+		try {
 			cursor = sqLiteDatabase.query("password", null, "id = ?", new String[] { String.valueOf(id) }, null, null,
 					null);
 
-			if (cursor.moveToNext())
-			{
-				password = new Password();
-				password.setId(cursor.getInt(cursor.getColumnIndex("id")));
-				password.setCreateDate(cursor.getLong(cursor.getColumnIndex("create_date")));
-				password.setTitle(cursor.getString(cursor.getColumnIndex("title")));
-				password.setUserName(cursor.getString(cursor.getColumnIndex("user_name")));
-				password.setPassword(cursor.getString(cursor.getColumnIndex("password")));
-				password.setNote(cursor.getString(cursor.getColumnIndex("note")));
-				password.setTop(cursor.getInt(cursor.getColumnIndex("is_top")) == 1 ? true : false);
+			if (cursor.moveToNext()) {
+				password = mapPassword(cursor);
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally
-		{
-			if (cursor != null)
-			{
+		} finally {
+			if (cursor != null) {
 				cursor.close();
 			}
 		}
 
+		return password;
+	}
+
+	private Password mapPassword(Cursor cursor) {
+		Password password = new Password();
+		password.setId(cursor.getInt(cursor.getColumnIndex("id")));
+		password.setCreateDate(cursor.getLong(cursor.getColumnIndex("create_date")));
+		password.setTitle(cursor.getString(cursor.getColumnIndex("title")));
+		password.setUserName(cursor.getString(cursor.getColumnIndex("user_name")));
+		password.setPassword(cursor.getString(cursor.getColumnIndex("password")));
+		password.setNote(cursor.getString(cursor.getColumnIndex("note")));
+		password.setTop(cursor.getInt(cursor.getColumnIndex("is_top")) == 1 ? true : false);
+		password.setGroupName(cursor.getString(cursor.getColumnIndex("group_name")));
 		return password;
 	}
 
@@ -164,45 +196,29 @@ public class PasswordDatabase extends SQLiteOpenHelper
 	 * 
 	 * @return 返回数据，为一个数组
 	 */
-	public List<Password> getAllPassword()
-	{
+	public List<Password> getAllPassword() {
 		List<Password> passwords = new ArrayList<Password>();
 		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 
 		Cursor cursor = null;
 
-		try
-		{
+		try {
 			cursor = sqLiteDatabase.query("password", null, null, null, null, null, null);
 
-			while (cursor.moveToNext())
-			{
-				Password password = new Password();
-				password.setId(cursor.getInt(cursor.getColumnIndex("id")));
-				password.setCreateDate(cursor.getLong(cursor.getColumnIndex("create_date")));
-				password.setTitle(cursor.getString(cursor.getColumnIndex("title")));
-				password.setUserName(cursor.getString(cursor.getColumnIndex("user_name")));
-				password.setPassword(cursor.getString(cursor.getColumnIndex("password")));
-				password.setNote(cursor.getString(cursor.getColumnIndex("note")));
-				password.setTop(cursor.getInt(cursor.getColumnIndex("is_top")) == 1 ? true : false);
+			while (cursor.moveToNext()) {
+				Password password = null;
+				password = mapPassword(cursor);
 
 				passwords.add(password);
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally
-		{
-			if (cursor != null)
-			{
+		} finally {
+			if (cursor != null) {
 				cursor.close();
 			}
 		}
-
 		return passwords;
-
 	}
 
 	/**
@@ -214,11 +230,96 @@ public class PasswordDatabase extends SQLiteOpenHelper
 	 *         otherwise. To remove all rows and get a count pass "1" as the
 	 *         whereClause.
 	 */
-	public int deletePasssword(int id)
-	{
+	public int deletePasssword(int id) {
 		int result = -1;
 		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 		result = sqLiteDatabase.delete("password", "id = ?", new String[] { String.valueOf(id) });
 		return result;
+	}
+
+	/**
+	 * 根据groupName获得数据库中保存的该分组下所有的密码
+	 * 
+	 * @param groupName
+	 *            分组名
+	 * @return 返回数据，为一个数组
+	 */
+	public List<Password> getAllPasswordByGroupName(String groupName) {
+		List<Password> passwords = new ArrayList<Password>();
+		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+
+		Cursor cursor = null;
+
+		try {
+			cursor = sqLiteDatabase.query("password", null, "group_name = ?", new String[] { groupName }, null, null,
+					null);
+
+			while (cursor.moveToNext()) {
+				Password password = null;
+				password = mapPassword(cursor);
+
+				passwords.add(password);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null) {
+				cursor.close();
+			}
+		}
+		return passwords;
+	}
+
+	/**
+	 * 数据库中添加密码分组
+	 * 
+	 * @param passwordGroup
+	 */
+	public void addPasswordGroup(PasswordGroup passwordGroup) {
+		try {
+			SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+			ContentValues contentValues = new ContentValues();
+			contentValues.put("name", passwordGroup.getGroupName());
+			sqLiteDatabase.insert("password_group", null, contentValues);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 获取数据库中的所有分组
+	 * 
+	 * @return
+	 */
+	public List<PasswordGroup> getAllPasswordGroup() {
+		List<PasswordGroup> passwordGroups = new ArrayList<PasswordGroup>();
+		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+		Cursor cursor = null;
+		try {
+			cursor = sqLiteDatabase.query("password_group", null, null, null, null, null, null);
+
+			while (cursor.moveToNext()) {
+				PasswordGroup passwordGroup = new PasswordGroup();
+				passwordGroup.setGroupName(cursor.getString(cursor.getColumnIndex("name")));
+				passwordGroups.add(passwordGroup);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null)
+				cursor.close();
+		}
+
+		return passwordGroups;
+	}
+
+	public int deletePasswordGroup(String passwordGroupName) {
+		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+		int count;
+		count = sqLiteDatabase.delete("password_group", "name = ?", new String[] { passwordGroupName });
+		if (count > 0) {
+			sqLiteDatabase.delete("password", "group_name = ?", new String[] { passwordGroupName });
+		}
+		return count;
 	}
 }

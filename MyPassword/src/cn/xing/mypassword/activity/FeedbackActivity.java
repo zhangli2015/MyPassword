@@ -23,38 +23,32 @@ import cn.zdx.xing.feedback.Feedback;
  * @author zengdexing
  * 
  */
-public class FeedbackActivity extends BaseActivity
-{
+public class FeedbackActivity extends BaseActivity {
 	@FindViewById(R.id.feedback_edittext)
 	private EditText editText;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_feedback);
 		initActionBar();
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
+	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.feedback, menu);
 		return true;
 	}
 
-	private void initActionBar()
-	{
+	private void initActionBar() {
 		ActionBar actionBar = getActionBar();
 		actionBar.setDisplayShowTitleEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
-		switch (item.getItemId())
-		{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
 			case R.id.action_feedback_send:
 				onSendClick();
 				break;
@@ -65,36 +59,29 @@ public class FeedbackActivity extends BaseActivity
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void onSendClick()
-	{
+	private void onSendClick() {
 		String content = editText.getText().toString().trim();
-		if (!content.equals(""))
-		{
+		if (!content.equals("")) {
 			final ProgressDialog progressDialog = new ProgressDialog(this);
 			progressDialog.setMessage(getString(R.string.feedback_sending));
 			progressDialog.setCancelable(true);
 			progressDialog.setIndeterminate(false);
 
 			progressDialog.show();
-			AsyncTask<String, Void, Boolean> asyncTask = new AsyncTask<String, Void, Boolean>()
-			{
+			AsyncTask<String, Void, Boolean> asyncTask = new AsyncTask<String, Void, Boolean>() {
 				@Override
-				protected Boolean doInBackground(String... params)
-				{
+				protected Boolean doInBackground(String... params) {
 					Feedback feedback = new Feedback();
 					feedback.setAppName("MyPassword");
 					feedback.setFeedback(params[0]);
 					feedback.setDeviceInfo(getDeviceInfo());
 
 					boolean result;
-					try
-					{
+					try {
 						feedback.commit();
 						result = true;
 						Thread.sleep(600);
-					}
-					catch (Exception e)
-					{
+					} catch (Exception e) {
 						e.printStackTrace();
 						result = false;
 					}
@@ -102,15 +89,11 @@ public class FeedbackActivity extends BaseActivity
 				}
 
 				@Override
-				protected void onPostExecute(Boolean result)
-				{
-					if (result)
-					{
+				protected void onPostExecute(Boolean result) {
+					if (result) {
 						showToast(R.string.feedback_thanks);
 						finish();
-					}
-					else
-					{
+					} else {
 						showToast(R.string.feedback_send_failed);
 					}
 					progressDialog.dismiss();
@@ -120,12 +103,10 @@ public class FeedbackActivity extends BaseActivity
 		}
 	}
 
-	public String getDeviceInfo()
-	{
+	public String getDeviceInfo() {
 		TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 		JSONObject jsonObject = new JSONObject();
-		try
-		{
+		try {
 			jsonObject.put("os", "Android");
 			jsonObject.put("os_display", android.os.Build.DISPLAY);
 			jsonObject.put("os_model", android.os.Build.MODEL);
@@ -134,9 +115,7 @@ public class FeedbackActivity extends BaseActivity
 			jsonObject.put("wetwork_country_iso", tm.getNetworkCountryIso());
 			jsonObject.put("version_code", getMyApplication().getVersionCode());
 			jsonObject.put("version_name", getMyApplication().getVersionName());
-		}
-		catch (JSONException e)
-		{
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		return jsonObject.toString();

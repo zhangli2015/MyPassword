@@ -2,8 +2,9 @@
 ==============================
 <img src="MyPassword/ic_launcher-web.png" width="256px"/>
 
-* E-mail：zengdexing1989@163.com
+* E-mail：mail@zengdexing.com
 * File encoding：GBK
+* 你的支持是我最大的动力
 
 简介：
 ---------------------------------
@@ -16,6 +17,10 @@ QQ账号？微信号？邮箱密码？网站通行证？种种密码设置令人
 
 版本
 ---------------------------------
+###4.3.2 已完成
+- 实现密码分类功能
+- 修复密码排序错误的BUG
+
 ###4.0.0 已完成
 - 集成友盟自动更新
 - 优化密码显示：更简洁、易用
@@ -43,8 +48,7 @@ QQ账号？微信号？邮箱密码？网站通行证？种种密码设置令人
 
 软件截图
 ---------------------------------
-<img src="Screenshot/01.png" width="220px"/>
-<img src="Screenshot/02.png" width="220px"/>
-<img src="Screenshot/03.png" width="220px"/>
-<img src="Screenshot/04.png" width="220px"/>
-<img src="Screenshot/05.png" width="220px"/>
+<img src="Screenshot/01.png" width="320px"/>
+<img src="Screenshot/02.png" width="320px"/>
+<img src="Screenshot/03.png" width="320px"/>
+<img src="Screenshot/04.png" width="320px"/>

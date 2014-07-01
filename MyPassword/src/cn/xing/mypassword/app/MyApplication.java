@@ -15,21 +15,18 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Looper;
 import cn.xing.mypassword.model.SettingKey;
 
-public class MyApplication extends Application implements OnSharedPreferenceChangeListener
-{
+public class MyApplication extends Application implements OnSharedPreferenceChangeListener {
 	/** 配置文件 */
 	private SharedPreferences sharedPreferences;
 	private Map<SettingKey, List<OnSettingChangeListener>> onSettingChangeListenerMap = new HashMap<>();
 
 	@Override
-	public void onCreate()
-	{
+	public void onCreate() {
 		super.onCreate();
 		loadSettings();
 	}
 
-	private void loadSettings()
-	{
+	private void loadSettings() {
 		sharedPreferences = getSharedPreferences("settings", Context.MODE_MULTI_PROCESS);
 		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 	}
@@ -43,8 +40,7 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 *            没有该设置将要返回的默认值
 	 * @return
 	 */
-	public String getString(SettingKey key, String defValue)
-	{
+	public String getString(SettingKey key, String defValue) {
 		return sharedPreferences.getString(key.name(), defValue);
 	}
 
@@ -57,8 +53,7 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 * @param value
 	 *            需要保存的值
 	 */
-	public void putString(SettingKey key, String value)
-	{
+	public void putString(SettingKey key, String value) {
 		sharedPreferences.edit().putString(key.name(), value).commit();
 	}
 
@@ -71,17 +66,13 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 * @param onSettingChangeListener
 	 *            监听变化的回调
 	 */
-	public void registOnSettingChangeListener(SettingKey key, OnSettingChangeListener onSettingChangeListener)
-	{
+	public void registOnSettingChangeListener(SettingKey key, OnSettingChangeListener onSettingChangeListener) {
 		checkUIThread();
 
 		List<OnSettingChangeListener> onSettingChangeListeners;
-		if (onSettingChangeListenerMap.containsKey(key))
-		{
+		if (onSettingChangeListenerMap.containsKey(key)) {
 			onSettingChangeListeners = onSettingChangeListenerMap.get(key);
-		}
-		else
-		{
+		} else {
 			onSettingChangeListeners = new ArrayList<OnSettingChangeListener>();
 			onSettingChangeListenerMap.put(key, onSettingChangeListeners);
 		}
@@ -98,15 +89,12 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 * @param onSettingChangeListener
 	 *            监听器
 	 */
-	public void unregistOnSettingChangeListener(SettingKey key, OnSettingChangeListener onSettingChangeListener)
-	{
+	public void unregistOnSettingChangeListener(SettingKey key, OnSettingChangeListener onSettingChangeListener) {
 		checkUIThread();
-		if (onSettingChangeListenerMap.containsKey(key))
-		{
+		if (onSettingChangeListenerMap.containsKey(key)) {
 			List<OnSettingChangeListener> onSettingChangeListeners = onSettingChangeListenerMap.get(key);
 			onSettingChangeListeners.remove(onSettingChangeListener);
-			if (onSettingChangeListeners.size() == 0)
-			{
+			if (onSettingChangeListeners.size() == 0) {
 				onSettingChangeListenerMap.remove(key);
 			}
 		}
@@ -115,18 +103,14 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	/**
 	 * 获取当前版本号
 	 */
-	public String getVersionName()
-	{
+	public String getVersionName() {
 		PackageManager packageManager = getPackageManager();
 		PackageInfo packInfo;
 		String version = "";
-		try
-		{
+		try {
 			packInfo = packageManager.getPackageInfo(getPackageName(), 0);
 			version = packInfo.versionName;
-		}
-		catch (NameNotFoundException e)
-		{
+		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
 		return version;
@@ -135,25 +119,20 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	/**
 	 * 获取当前版本号
 	 */
-	public int getVersionCode()
-	{
+	public int getVersionCode() {
 		PackageManager packageManager = getPackageManager();
 		PackageInfo packInfo;
 		int versionCode = 0;
-		try
-		{
+		try {
 			packInfo = packageManager.getPackageInfo(getPackageName(), 0);
 			versionCode = packInfo.versionCode;
-		}
-		catch (NameNotFoundException e)
-		{
+		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
 		return versionCode;
 	}
 
-	private void checkUIThread()
-	{
+	private void checkUIThread() {
 		if (!isRunOnUIThread())
 			throw new RuntimeException("方法只能在主线程调用！");
 	}
@@ -163,20 +142,16 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 * 
 	 * @return
 	 */
-	private boolean isRunOnUIThread()
-	{
+	private boolean isRunOnUIThread() {
 		return Looper.getMainLooper().getThread() == Thread.currentThread();
 	}
 
 	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
-	{
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		SettingKey settingKey = SettingKey.valueOf(SettingKey.class, key);
 		List<OnSettingChangeListener> onSettingChangeListeners = onSettingChangeListenerMap.get(settingKey);
-		if (onSettingChangeListeners != null)
-		{
-			for (OnSettingChangeListener onSettingChangeListener : onSettingChangeListeners)
-			{
+		if (onSettingChangeListeners != null) {
+			for (OnSettingChangeListener onSettingChangeListener : onSettingChangeListeners) {
 				onSettingChangeListener.onSettingChange(settingKey);
 			}
 		}

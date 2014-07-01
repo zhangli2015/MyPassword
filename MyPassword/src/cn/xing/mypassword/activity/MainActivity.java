@@ -2,27 +2,35 @@ package cn.xing.mypassword.activity;
 
 import java.util.HashMap;
 
+import android.app.ActionBar;
 import android.app.AlertDialog.Builder;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.view.Gravity;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.view.View;
 import cn.xing.mypassword.R;
+import cn.xing.mypassword.activity.PasswordGroupFragment.OnPasswordGroupSelected;
 import cn.xing.mypassword.app.BaseActivity;
 import cn.xing.mypassword.dialog.ExportDialog;
 import cn.xing.mypassword.dialog.ImportDialog;
 import cn.xing.mypassword.model.SettingKey;
 import cn.xing.mypassword.service.Mainbinder;
+import cn.zdx.lib.annotation.FindViewById;
 
 import com.umeng.analytics.MobclickAgent;
 import com.umeng.update.UmengUpdateAgent;
@@ -33,32 +41,70 @@ import com.umeng.update.UmengUpdateAgent;
  * @author zengdexing
  * 
  */
-public class MainActivity extends BaseActivity
-{
+public class MainActivity extends BaseActivity {
 	/** 数据源 */
 	private Mainbinder mainbinder;
 	private long lastBackKeyTime;
 
-	private ServiceConnection serviceConnection = new ServiceConnection()
-	{
+	@FindViewById(R.id.drawer_layout)
+	private DrawerLayout drawerLayout;
+
+	private ActionBarDrawerToggle mDrawerToggle;
+
+	private PasswordListFragment passwordListFragment;
+	private PasswordGroupFragment passwordGroupFragment;
+
+	@FindViewById(R.id.navigation_drawer)
+	private View drawerView;
+
+	private OnPasswordGroupSelected onPasswordGroupSelected = new OnPasswordGroupSelected() {
 		@Override
-		public void onServiceDisconnected(ComponentName name)
-		{
+		public void onPasswordGroupSelected(String passwordGroupName) {
+			drawerLayout.closeDrawer(drawerView);
+			if (passwordListFragment != null)
+				passwordListFragment.showPasswordGroup(passwordGroupName);
+		}
+	};
+
+	private ServiceConnection serviceConnection = new ServiceConnection() {
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
 			mainbinder = null;
 		}
 
 		@Override
-		public void onServiceConnected(ComponentName name, IBinder service)
-		{
+		public void onServiceConnected(ComponentName name, IBinder service) {
 			mainbinder = (Mainbinder) service;
+			initFragment();
 		}
+
 	};
 
+	private void initFragment() {
+		FragmentManager fragmentManager = getFragmentManager();
+
+		passwordListFragment = (PasswordListFragment) fragmentManager.findFragmentByTag("PasswordListFragment");
+		if (passwordListFragment == null)
+			passwordListFragment = new PasswordListFragment();
+		passwordListFragment.setDataSource(mainbinder);
+
+		passwordGroupFragment = (PasswordGroupFragment) fragmentManager.findFragmentByTag("PasswordGroupFragment");
+		if (passwordGroupFragment == null)
+			passwordGroupFragment = new PasswordGroupFragment();
+		passwordGroupFragment.setDataSource(mainbinder, onPasswordGroupSelected);
+
+		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+		fragmentTransaction.replace(R.id.navigation_drawer, passwordGroupFragment, "PasswordGroupFragment");
+		fragmentTransaction.replace(R.id.container, passwordListFragment, "PasswordListFragment");
+		fragmentTransaction.commitAllowingStateLoss();
+	}
+
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(null);
 		setContentView(R.layout.activity_main);
+
+		initDrawer();
 
 		Intent intent = new Intent("cn.xing.mypassword");
 		this.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
@@ -67,31 +113,84 @@ public class MainActivity extends BaseActivity
 		UmengUpdateAgent.update(this);
 	}
 
+	private void initDrawer() {
+		drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+		actionBar.setHomeButtonEnabled(true);
+		mDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, R.drawable.ic_drawer,
+				R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+			@Override
+			public void onDrawerOpened(View drawerView) {
+				super.onDrawerOpened(drawerView);
+				getActivity().invalidateOptionsMenu();
+				getActionBar().setTitle(R.string.app_name);
+			}
+
+			@Override
+			public void onDrawerClosed(View drawerView) {
+				super.onDrawerClosed(drawerView);
+				getActivity().invalidateOptionsMenu();
+				if (passwordListFragment != null && !passwordListFragment.getPasswordGroupName().equals(""))
+					getActionBar().setTitle(passwordListFragment.getPasswordGroupName());
+				else {
+					getActionBar().setTitle(R.string.app_name);
+				}
+			}
+		};
+
+		drawerLayout.post(new Runnable() {
+			@Override
+			public void run() {
+				mDrawerToggle.syncState();
+			}
+		});
+		drawerLayout.setDrawerListener(mDrawerToggle);
+
+		if (getSetting(SettingKey.IS_SHOWED_DRAWER, "false").equals("false")) {
+			putSetting(SettingKey.IS_SHOWED_DRAWER, "true");
+			drawerLayout.openDrawer(drawerView);
+		} else {
+			String lastGroupName = getSetting(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME, "");
+			if (lastGroupName.equals(""))
+				lastGroupName = getString(R.string.app_name);
+			getActionBar().setTitle(lastGroupName);
+		}
+	}
+
 	@Override
-	protected void onDestroy()
-	{
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		mDrawerToggle.onConfigurationChanged(newConfig);
+	}
+
+	@Override
+	protected void onDestroy() {
 		super.onDestroy();
 		unbindService(serviceConnection);
 	}
 
-	private boolean isExistSDCard()
-	{
-		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-		{
+	private boolean isExistSDCard() {
+		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 			return true;
-		}
-		else
+		} else
 			return false;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (mDrawerToggle.onOptionsItemSelected(item)) {
+			return true;
+		}
 		int id = item.getItemId();
-		switch (id)
-		{
+		switch (id) {
 			case R.id.action_add_password:
-				startActivity(new Intent(this, EditPasswordActivity.class));
+				if (mainbinder == null)
+					break;
+				Intent intent = new Intent(this, EditPasswordActivity.class);
+				if (passwordListFragment != null)
+					intent.putExtra(EditPasswordActivity.PASSWORD_GROUP, passwordListFragment.getPasswordGroupName());
+				startActivity(intent);
 				break;
 
 			case R.id.action_import:
@@ -106,8 +205,7 @@ public class MainActivity extends BaseActivity
 				// 密码导出
 				if (mainbinder == null)
 					break;
-				if (!isExistSDCard())
-				{
+				if (!isExistSDCard()) {
 					showToast(R.string.export_no_sdcard);
 					break;
 				}
@@ -125,11 +223,7 @@ public class MainActivity extends BaseActivity
 				break;
 			case R.id.action_about:
 				// 关于
-				onAboutClick();
-				break;
-			case R.id.action_feedback:
-				// 意见反馈
-				onFeedbackClick();
+				startActivity(new Intent(this, AboutActivity.class));
 				break;
 			case R.id.action_exit:
 				// 退出
@@ -142,30 +236,22 @@ public class MainActivity extends BaseActivity
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
-	 * 意见反馈
-	 */
-	private void onFeedbackClick()
-	{
-		startActivity(new Intent(this, FeedbackActivity.class));
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		if (!drawerLayout.isDrawerOpen(drawerView)) {
+			getMenuInflater().inflate(R.menu.main, menu);
+			return true;
+		} else {
+			return super.onCreateOptionsMenu(menu);
+		}
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
-	{
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event)
-	{
-		switch (keyCode)
-		{
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
 			case KeyEvent.KEYCODE_BACK:
 				long delay = Math.abs(System.currentTimeMillis() - lastBackKeyTime);
-				if (delay > 4000)
-				{
+				if (delay > 4000) {
 					// 双击退出程序
 					showToast(R.string.toast_key_back);
 					lastBackKeyTime = System.currentTimeMillis();
@@ -179,34 +265,26 @@ public class MainActivity extends BaseActivity
 		return super.onKeyDown(keyCode, event);
 	}
 
-	private void onEffectClick()
-	{
-		if (getSetting(SettingKey.JAZZY_EFFECT_INTRODUCTION, "false").equals("false"))
-		{
+	private void onEffectClick() {
+		if (getSetting(SettingKey.JAZZY_EFFECT_INTRODUCTION, "false").equals("false")) {
 			putSetting(SettingKey.JAZZY_EFFECT_INTRODUCTION, "true");
 			Builder builder = new Builder(this);
 			builder.setMessage(R.string.action_jazzy_effect_introduction);
-			builder.setNeutralButton(R.string.i_known, new OnClickListener()
-			{
+			builder.setNeutralButton(R.string.i_known, new OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					onEffectClick();
 				}
 			});
 			builder.show();
-		}
-		else
-		{
+		} else {
 			Builder builder = new Builder(this);
 			builder.setTitle(R.string.action_jazzy_effect);
 
 			final String[] effectArray = getResources().getStringArray(R.array.jazzy_effects);
-			builder.setItems(effectArray, new DialogInterface.OnClickListener()
-			{
+			builder.setItems(effectArray, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					getActivity().putSetting(SettingKey.JAZZY_EFFECT, which + "");
 					onEventEffect(effectArray[which]);
 				}
@@ -220,27 +298,9 @@ public class MainActivity extends BaseActivity
 	 * 
 	 * @param effect
 	 */
-	private void onEventEffect(String effect)
-	{
+	private void onEventEffect(String effect) {
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put("effect", effect);
 		MobclickAgent.onEvent(getActivity(), "effect", map);
-	}
-
-	/**
-	 * 关于对话框
-	 */
-	private void onAboutClick()
-	{
-		Builder builder = new Builder(getActivity());
-		builder.setTitle(R.string.action_about_us);
-		builder.setNeutralButton(R.string.common_sure, null);
-		String message = getString(R.string.drawer_about_detail, getMyApplication().getVersionName());
-		TextView textView = new TextView(getActivity());
-		textView.setGravity(Gravity.CENTER);
-		textView.setText(message);
-		textView.setTextSize(18);
-		builder.setView(textView);
-		builder.show();
 	}
 }

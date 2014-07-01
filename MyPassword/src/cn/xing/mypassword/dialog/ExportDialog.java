@@ -26,17 +26,14 @@ import cn.xing.mypassword.service.OnGetAllPasswordCallback;
  * 密码导出对话框
  * 
  * @author zengdexing
- * 
  */
-public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCallback
-{
+public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCallback {
 	private Mainbinder mainbinder;
-	
+
 	/** 导出文件名的格式化 */
 	private SimpleDateFormat fileNameFormat;
 
-	public ExportDialog(Context context, Mainbinder mainbinder)
-	{
+	public ExportDialog(Context context, Mainbinder mainbinder) {
 		super(context);
 		this.mainbinder = mainbinder;
 
@@ -48,16 +45,13 @@ public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCall
 	}
 
 	@Override
-	public void show()
-	{
+	public void show() {
 		Builder builder = new Builder(getContext());
 		builder.setTitle(R.string.export_to_sd);
 		builder.setMessage(R.string.export_dialog_attention);
-		builder.setNeutralButton(R.string.i_known, new DialogInterface.OnClickListener()
-		{
+		builder.setNeutralButton(R.string.i_known, new DialogInterface.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int which)
-			{
+			public void onClick(DialogInterface dialog, int which) {
 				ExportDialog.super.show();
 				mainbinder.getAllPassword(ExportDialog.this);
 			}
@@ -66,14 +60,12 @@ public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCall
 		builder.show();
 	}
 
-	private String getString(int id)
-	{
+	private String getString(int id) {
 		return getContext().getString(id);
 	}
 
 	/** 获得本地文件保存名 */
-	private String getFileName()
-	{
+	private String getFileName() {
 		String fileName = fileNameFormat.format(new Date());
 
 		StringBuilder stringBuilder = new StringBuilder();
@@ -87,39 +79,29 @@ public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCall
 	}
 
 	@Override
-	public void onGetAllPassword(final List<Password> passwords)
-	{
+	public void onGetAllPassword(String groupName, final List<Password> passwords) {
 		final List<Password> tempPasswords = new ArrayList<>(passwords);
-		new AsyncSingleTask<File>()
-		{
+		new AsyncSingleTask<File>() {
 			@Override
-			protected AsyncResult<File> doInBackground(AsyncResult<File> asyncResult)
-			{
+			protected AsyncResult<File> doInBackground(AsyncResult<File> asyncResult) {
 				String fileName = getFileName();
 				File file = new File(fileName);
 				file.getParentFile().mkdirs();
 				file.deleteOnExit();
 				PrintWriter printWriter = null;
-				try
-				{
+				try {
 					file.createNewFile();
 					printWriter = new PrintWriter(file);
-					for (Password password : tempPasswords)
-					{
+					for (Password password : tempPasswords) {
 						printWriter.println(password.toJSON());
 					}
 					asyncResult.setData(file);
 					asyncResult.setResult(0);
-				}
-				catch (IOException e)
-				{
+				} catch (IOException e) {
 					asyncResult.setResult(-1);
 					e.printStackTrace();
-				}
-				finally
-				{
-					if (printWriter != null)
-					{
+				} finally {
+					if (printWriter != null) {
 						printWriter.close();
 					}
 				}
@@ -127,11 +109,9 @@ public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCall
 			}
 
 			@Override
-			protected void runOnUIThread(AsyncResult<File> asyncResult)
-			{
+			protected void runOnUIThread(AsyncResult<File> asyncResult) {
 				dismiss();
-				if (asyncResult.getResult() == 0)
-				{
+				if (asyncResult.getResult() == 0) {
 					// 导出成功
 					String msg = getContext().getString(R.string.export_successful, asyncResult.getData().getName());
 
@@ -141,9 +121,7 @@ public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCall
 					Dialog dialog = builder.create();
 					dialog.setCanceledOnTouchOutside(false);
 					dialog.show();
-				}
-				else
-				{
+				} else {
 					// 导出失败！
 					String msg = getContext().getString(R.string.toast_export_failed);
 					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();

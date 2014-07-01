@@ -14,30 +14,23 @@ import android.view.View.OnClickListener;
  * @author zengdexing
  * 
  */
-public class OnAnnotationClickListener implements OnClickListener
-{
+public class OnAnnotationClickListener implements OnClickListener {
 	private Object target;
 	private Method method;
 
-	public OnAnnotationClickListener(Object target, Method method)
-	{
+	public OnAnnotationClickListener(Object target, Method method) {
 		this.target = target;
 		this.method = method;
 	}
 
 	@Override
-	public void onClick(View v)
-	{
-		if (!method.isAccessible())
-		{
+	public void onClick(View v) {
+		if (!method.isAccessible()) {
 			method.setAccessible(true);
 		}
-		try
-		{
+		try {
 			method.invoke(target, v);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

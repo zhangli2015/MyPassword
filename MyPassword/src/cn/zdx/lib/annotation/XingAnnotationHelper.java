@@ -17,15 +17,13 @@ import android.view.View;
  * 
  * @author zengdexing
  */
-public class XingAnnotationHelper
-{
+public class XingAnnotationHelper {
 	/**
 	 * 初始化Activity中使用了{@link FindViewById}注解的成员变量
 	 * 
 	 * @param target
 	 */
-	public static void findView(Activity target)
-	{
+	public static void findView(Activity target) {
 		findView(target, ViewFinder.create(target));
 	}
 
@@ -34,8 +32,7 @@ public class XingAnnotationHelper
 	 * 
 	 * @param target
 	 */
-	public static void findView(Object target, View view)
-	{
+	public static void findView(Object target, View view) {
 		findView(target, ViewFinder.create(view));
 	}
 
@@ -47,15 +44,12 @@ public class XingAnnotationHelper
 	 * @param viewFinder
 	 *            View查找器
 	 */
-	public static void findView(Object target, ViewFinder viewFinder)
-	{
+	public static void findView(Object target, ViewFinder viewFinder) {
 		Class<?> clazz = target.getClass();
 
 		Field[] fields = clazz.getDeclaredFields();
-		if (fields != null && fields.length > 0)
-		{
-			for (int i = 0; i < fields.length; i++)
-			{
+		if (fields != null && fields.length > 0) {
+			for (int i = 0; i < fields.length; i++) {
 				Field field = fields[i];
 				findView(target, field, viewFinder);
 			}
@@ -72,12 +66,9 @@ public class XingAnnotationHelper
 	 * @param viewFinder
 	 *            VIew查找器
 	 */
-	public static void findView(Object target, Field field, ViewFinder viewFinder)
-	{
-		if (field.isAnnotationPresent(FindViewById.class))
-		{
-			if (!field.isAccessible())
-			{
+	public static void findView(Object target, Field field, ViewFinder viewFinder) {
+		if (field.isAnnotationPresent(FindViewById.class)) {
+			if (!field.isAccessible()) {
 				field.setAccessible(true);
 			}
 
@@ -86,12 +77,9 @@ public class XingAnnotationHelper
 
 			checkView(field.getName(), view, field.getType());
 
-			try
-			{
+			try {
 				field.set(target, view);
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -106,14 +94,10 @@ public class XingAnnotationHelper
 	 * 如果产生{@link ClassCastException}异常，通常是注解ID的控件在XML中的类型和需要绑定的对象类型不一致。
 	 * </p>
 	 */
-	private static void checkView(String msg, View targetView, Class<?> bindType)
-	{
-		if (targetView == null)
-		{
+	private static void checkView(String msg, View targetView, Class<?> bindType) {
+		if (targetView == null) {
 			throw new NullPointerException("\"" + msg + "\"要绑定的控件不存在!!");
-		}
-		else if (!bindType.isInstance(targetView))
-		{
+		} else if (!bindType.isInstance(targetView)) {
 			String error = "类型匹配错误，\"" + msg + "\"要绑定的类型为：" + bindType + ",而目标类型为：" + targetView.getClass();
 			throw new ClassCastException(error);
 		}

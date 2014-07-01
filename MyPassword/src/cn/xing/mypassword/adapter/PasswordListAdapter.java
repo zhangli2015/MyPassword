@@ -34,8 +34,7 @@ import cn.zdx.lib.annotation.XingAnnotationHelper;
  * @author zengdexing
  * 
  */
-public class MainAdapter extends BaseAdapter
-{
+public class PasswordListAdapter extends BaseAdapter {
 	private List<PasswordItem> passwords = new ArrayList<PasswordItem>();
 	private Context context;
 	private SimpleDateFormat simpleDateFormatYear = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -44,27 +43,21 @@ public class MainAdapter extends BaseAdapter
 
 	private SimpleDateFormat simpleDateFormatMonth = new SimpleDateFormat("MM-dd", Locale.getDefault());
 
+	private String passwordGroup;
+
 	/** 一天含有的秒数 */
 	private static final long DAY = 1000 * 60 * 60 * 24;
 
-	private Comparator<PasswordItem> comparator = new Comparator<PasswordItem>()
-	{
+	private Comparator<PasswordItem> comparator = new Comparator<PasswordItem>() {
 		@Override
-		public int compare(PasswordItem lhs, PasswordItem rhs)
-		{
+		public int compare(PasswordItem lhs, PasswordItem rhs) {
 			// 置顶排序
-			if (lhs.password.isTop() || rhs.password.isTop())
-			{
-				if (lhs.password.isTop() && rhs.password.isTop())
-				{
+			if (lhs.password.isTop() || rhs.password.isTop()) {
+				if (lhs.password.isTop() && rhs.password.isTop()) {
 					return (int) (rhs.password.getCreateDate() - lhs.password.getCreateDate());
-				}
-				else if (lhs.password.isTop())
-				{
+				} else if (lhs.password.isTop()) {
 					return -1;
-				}
-				else
-				{
+				} else {
 					return 1;
 				}
 			}
@@ -78,24 +71,20 @@ public class MainAdapter extends BaseAdapter
 		}
 	};
 
-	public int dip2px(float dipValue)
-	{
+	public int dip2px(float dipValue) {
 		final float scale = context.getResources().getDisplayMetrics().density;
 		return (int) (dipValue * scale + 0.5f);
 	}
 
-	public MainAdapter(Context context)
-	{
+	public PasswordListAdapter(Context context) {
 		this.context = context;
 		padding = dip2px(6);
 	}
 
-	public void setData(List<Password> passwords, Mainbinder mainbinder)
-	{
+	public void setData(List<Password> passwords, Mainbinder mainbinder) {
 		this.mainbinder = mainbinder;
 		this.passwords.clear();
-		for (Password password : passwords)
-		{
+		for (Password password : passwords) {
 			this.passwords.add(new PasswordItem(password));
 		}
 		Collections.sort(this.passwords, comparator);
@@ -103,39 +92,32 @@ public class MainAdapter extends BaseAdapter
 	}
 
 	@Override
-	public int getCount()
-	{
+	public int getCount() {
 		return passwords.size();
 	}
 
 	@Override
-	public PasswordItem getItem(int position)
-	{
+	public PasswordItem getItem(int position) {
 		return passwords.get(position);
 	}
 
 	@Override
-	public long getItemId(int position)
-	{
+	public long getItemId(int position) {
 		return position;
 	}
 
 	@Override
-	public void notifyDataSetChanged()
-	{
-		for (PasswordItem passwordItem : passwords)
-		{
+	public void notifyDataSetChanged() {
+		for (PasswordItem passwordItem : passwords) {
 			passwordItem.initDataString();
 		}
 		super.notifyDataSetChanged();
 	}
 
 	@Override
-	public View getView(int position, View convertView, ViewGroup parent)
-	{
+	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder viewHolder;
-		if (convertView == null)
-		{
+		if (convertView == null) {
 			viewHolder = new ViewHolder();
 			convertView = LayoutInflater.from(context).inflate(R.layout.main_password_item, null);
 			convertView.setTag(viewHolder);
@@ -143,18 +125,13 @@ public class MainAdapter extends BaseAdapter
 			viewHolder.copyView.setOnClickListener(viewHolder);
 			viewHolder.deleteView.setOnClickListener(viewHolder);
 			viewHolder.editView.setOnClickListener(viewHolder);
-		}
-		else
-		{
+		} else {
 			viewHolder = (ViewHolder) convertView.getTag();
 		}
 
-		if (position == 0)
-		{
+		if (position == 0) {
 			convertView.setPadding(padding, padding, padding, padding);
-		}
-		else
-		{
+		} else {
 			convertView.setPadding(padding, 0, padding, padding);
 		}
 
@@ -165,8 +142,7 @@ public class MainAdapter extends BaseAdapter
 		return convertView;
 	}
 
-	private class ViewHolder implements android.view.View.OnClickListener
-	{
+	private class ViewHolder implements android.view.View.OnClickListener {
 		@FindViewById(R.id.main_item_title)
 		public TextView titleView;
 
@@ -200,10 +176,8 @@ public class MainAdapter extends BaseAdapter
 		private PasswordItem passwordItem;
 
 		@Override
-		public void onClick(View view)
-		{
-			switch (view.getId())
-			{
+		public void onClick(View view) {
+			switch (view.getId()) {
 				case R.id.main_item_copy:
 					onCopyClick();
 					break;
@@ -219,29 +193,28 @@ public class MainAdapter extends BaseAdapter
 			}
 		}
 
-		private void onCopyClick()
-		{
+		private void onCopyClick() {
 			Builder builder = new Builder(context);
 
-			String[] item = new String[] { context.getResources().getString(R.string.copy_name), context.getResources().getString(R.string.copy_password) };
+			String[] item = new String[] { context.getResources().getString(R.string.copy_name),
+					context.getResources().getString(R.string.copy_password) };
 
-			builder.setItems(item, new DialogInterface.OnClickListener()
-			{
+			builder.setItems(item, new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
-					switch (which)
-					{
+				public void onClick(DialogInterface dialog, int which) {
+					switch (which) {
 						case 0:
 							// 复制名字
-							ClipboardManager cmbName = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+							ClipboardManager cmbName = (ClipboardManager) context
+									.getSystemService(Context.CLIPBOARD_SERVICE);
 							ClipData clipDataName = ClipData.newPlainText(null, passwordItem.password.getUserName());
 							cmbName.setPrimaryClip(clipDataName);
 							Toast.makeText(context, R.string.copy_name_toast, Toast.LENGTH_SHORT).show();
 							break;
 						case 1:
 							// 复制密码
-							ClipboardManager cmbPassword = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+							ClipboardManager cmbPassword = (ClipboardManager) context
+									.getSystemService(Context.CLIPBOARD_SERVICE);
 							ClipData clipData = ClipData.newPlainText(null, passwordItem.password.getPassword());
 							cmbPassword.setPrimaryClip(clipData);
 							Toast.makeText(context, R.string.copy_password_toast, Toast.LENGTH_SHORT).show();
@@ -254,23 +227,20 @@ public class MainAdapter extends BaseAdapter
 			builder.show();
 		}
 
-		private void onEditClick()
-		{
+		private void onEditClick() {
 			Intent intent = new Intent(context, EditPasswordActivity.class);
 			intent.putExtra(EditPasswordActivity.ID, passwordItem.password.getId());
+			intent.putExtra(EditPasswordActivity.PASSWORD_GROUP, passwordGroup);
 			context.startActivity(intent);
 		}
 
-		private void onDeleteClick()
-		{
+		private void onDeleteClick() {
 			Builder builder = new Builder(context);
 			builder.setMessage(R.string.alert_delete_message);
 			builder.setTitle(passwordItem.password.getTitle());
-			builder.setNeutralButton(R.string.yes, new OnClickListener()
-			{
+			builder.setNeutralButton(R.string.yes, new OnClickListener() {
 				@Override
-				public void onClick(DialogInterface dialog, int which)
-				{
+				public void onClick(DialogInterface dialog, int which) {
 					mainbinder.deletePassword(passwordItem.password.getId());
 				}
 			});
@@ -278,8 +248,7 @@ public class MainAdapter extends BaseAdapter
 			builder.show();
 		}
 
-		void bindView(PasswordItem passwordItem)
-		{
+		void bindView(PasswordItem passwordItem) {
 			this.passwordItem = passwordItem;
 			titleView.setText(passwordItem.password.getTitle());
 			dateView.setText(passwordItem.dataString);
@@ -287,105 +256,76 @@ public class MainAdapter extends BaseAdapter
 			passwordView.setText(passwordItem.password.getPassword());
 
 			String note = passwordItem.password.getNote();
-			if (TextUtils.isEmpty(note))
-			{
+			if (TextUtils.isEmpty(note)) {
 				noteConainer.setVisibility(View.GONE);
-			}
-			else
-			{
+			} else {
 				noteConainer.setVisibility(View.VISIBLE);
 				noteView.setText(note);
 			}
 
-			if (passwordItem.password.isTop())
-			{
+			if (passwordItem.password.isTop()) {
 				topIconView.setVisibility(View.VISIBLE);
 				dateView.setTextColor(context.getResources().getColor(R.color.title_color));
-			}
-			else
-			{
+			} else {
 				topIconView.setVisibility(View.GONE);
 				dateView.setTextColor(context.getResources().getColor(R.color.text_color));
 			}
 		}
 	}
 
-	public class PasswordItem
-	{
+	public class PasswordItem {
 		public String dataString;
 		public Password password;
 
-		private PasswordItem(Password password)
-		{
+		private PasswordItem(Password password) {
 			this.password = password;
 			initDataString();
 		}
 
-		public void initDataString()
-		{
+		public void initDataString() {
 			dataString = fomartDate(password.getCreateDate());
 		}
 	}
 
-	private String fomartDate(long createDate)
-	{
+	private String fomartDate(long createDate) {
 		String result = "";
 		long currentTime = System.currentTimeMillis();
 		long distance = currentTime - createDate;
-		if (createDate > currentTime)
-		{
+		if (createDate > currentTime) {
 			result = simpleDateFormatYear.format(createDate);
-		}
-		else if (distance < 1000 * 60)
-		{
+		} else if (distance < 1000 * 60) {
 			result = context.getString(R.string.just);
-		}
-		else if (distance < 1000 * 60 * 60)
-		{
+		} else if (distance < 1000 * 60 * 60) {
 			String dateString = context.getString(R.string.minute_ago);
 			result = String.format(Locale.getDefault(), dateString, distance / (1000 * 60));
-		}
-		else if (distance < DAY)
-		{
+		} else if (distance < DAY) {
 			String dateString = context.getString(R.string.hour_ago);
 			result = String.format(Locale.getDefault(), dateString, distance / (1000 * 60 * 60));
-		}
-		else if (distance < (DAY * 7))
-		{
+		} else if (distance < (DAY * 7)) {
 			String dateString = context.getString(R.string.day_ago);
 			result = String.format(Locale.getDefault(), dateString, distance / (DAY));
-		}
-		else if (distance < DAY * 30)
-		{
+		} else if (distance < DAY * 30) {
 			String dateString = context.getString(R.string.week_ago);
 			result = String.format(Locale.getDefault(), dateString, distance / (DAY * 7));
-		}
-		else if (distance < DAY * 365)
-		{
+		} else if (distance < DAY * 365) {
 			result = simpleDateFormatMonth.format(createDate);
-		}
-		else
-		{
+		} else {
 			result = simpleDateFormatYear.format(createDate);
 		}
 
 		return result;
 	}
 
-	public void onNewPassword(Password password)
-	{
+	public void onNewPassword(Password password) {
 		passwords.add(0, new PasswordItem(password));
 		Collections.sort(this.passwords, comparator);
 		notifyDataSetChanged();
 	}
 
-	public void onDeletePassword(int id)
-	{
-		for (int i = 0; i < passwords.size(); i++)
-		{
+	public void onDeletePassword(int id) {
+		for (int i = 0; i < passwords.size(); i++) {
 			PasswordItem passwordItem = passwords.get(i);
-			if (passwordItem.password.getId() == id)
-			{
+			if (passwordItem.password.getId() == id) {
 				passwords.remove(i);
 				break;
 			}
@@ -393,14 +333,14 @@ public class MainAdapter extends BaseAdapter
 		notifyDataSetChanged();
 	}
 
-	public void onUpdatePassword(Password newPassword)
-	{
+	public void onUpdatePassword(Password newPassword) {
 		boolean needSort = false;
-		for (int i = 0; i < passwords.size(); i++)
-		{
+
+		boolean hasFind = false;
+
+		for (int i = 0; i < passwords.size(); i++) {
 			Password oldPassword = passwords.get(i).password;
-			if (oldPassword.getId() == newPassword.getId())
-			{
+			if (oldPassword.getId() == newPassword.getId()) {
 				if (newPassword.getCreateDate() != 0)
 					oldPassword.setCreateDate(newPassword.getCreateDate());
 				if (newPassword.getTitle() != null)
@@ -411,16 +351,28 @@ public class MainAdapter extends BaseAdapter
 					oldPassword.setPassword(newPassword.getPassword());
 				if (newPassword.getNote() != null)
 					oldPassword.setNote(newPassword.getNote());
-				if (oldPassword.isTop() != newPassword.isTop())
-				{
+				if (oldPassword.isTop() != newPassword.isTop()) {
 					oldPassword.setTop(newPassword.isTop());
 					needSort = true;
 				}
+				if (!oldPassword.getGroupName().equals(newPassword.getGroupName()))
+					passwords.remove(i);
+				hasFind = true;
 				break;
 			}
 		}
+
+		if (!hasFind) {
+			passwords.add(0, new PasswordItem(newPassword));
+			needSort = true;
+		}
+
 		if (needSort)
 			Collections.sort(this.passwords, comparator);
 		notifyDataSetChanged();
+	}
+
+	public void setPasswordGroup(String passwordGroup) {
+		this.passwordGroup = passwordGroup;
 	}
 }

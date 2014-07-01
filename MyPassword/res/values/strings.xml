@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="app_name">密码管理</string>
     <string name="action_add_password">添 加</string>
     <string name="user_name">账号：</string>
     <string name="title">标题：</string>
     <string name="password">密码：</string>
+    <string name="password_group">分组：</string>
     <string name="isTop">置顶</string>
     <string name="updata">修改</string>
     <string name="delete">删除</string>
@@ -37,7 +40,6 @@
     <string name="feedback_sending">正在发送，请稍候&#8230;</string>
     <string name="feedback_send_failed">发送失败，请稍候再试</string>
     <string name="feedback_thanks">非常感谢您的反馈</string>
-    <string name="action_about_us">关 于</string>
     <string name="action_exit">退 出</string>
     <string name="alert_delete_message">删除后不可恢复，您确定吗？</string>
     <string name="yes">是</string>
@@ -48,8 +50,7 @@
     <string name="add_password_name_hint">输入您的账号</string>
     <string name="add_password_password_hint">输入您的密码</string>
     <string name="add_password_save_no_data">标题不可为空</string>
-    <string name="copyright_description">Copyright © 2014 zengdexing.\nAll Rights Reserved.</string>
-    <string name="drawer_about_detail">zengdexing1989@163.com\nVersion: %s\nCopyright © 2014 zengdexing.\nAll Rights Reserved.</string>
+    <string name="copyright_description">Copyright © 2014 zengdexing.com.\nAll Rights Reserved.</string>
     <string name="lock_pattern_error">图案错误</string>
     <string name="set_lock_pattern_first_message">亲爱的用户，您好！第一次使用软件，为了安全，您需要绘制一个解锁图案用于登录</string>
     <string name="set_lock_pattern_first_sure">确 定</string>
@@ -62,7 +63,7 @@
     <string name="set_lock_pattern_second_step_error">图案与上次不一致，请重新绘制</string>
     <string name="set_lock_pattern_second_step_tips">设置成功，请牢记您的解锁图案</string>
     <string name="set_lock_pattern_step_tips">完成后松开手指</string>
-    <string name="no_password_tips">您还没有保存过密码\n点击右上角图标增加几个吧</string>
+    <string name="no_password_tips">还没有保存密码\n点击右上角的\"+\"添加几个吧</string>
     <string name="toast_key_back">再按一次 退出程序</string>
     <string name="import_form_sd">从SD卡导入</string>
     <string name="export_to_sd">导出到SD卡</string>
@@ -83,4 +84,16 @@
     <string name="import_file_successs">导入成功，本次一共导入%d个密码。</string>
     <string name="common_sure">确 定</string>
     <string name="package_name">cn.xing.mypassword</string>
+    <string name="password_group_title">密码分组</string>
+    <string name="password_group_add">添加分组</string>
+    <string name="password_group_default_name">默认</string>
+    <string name="delete_password_group_title">删除密码分组</string>
+    <string name="delete_password_group_message">将删除\"%s\"分组下的所有密码，不可恢复，你确定删除吗？</string>
+    <string name="delete_password_add">添加分组</string>
+    <string name="delete_password_sure">确 定</string>
+    <string name="delete_password_cancle">取 消</string>
+    <string name="add_password_group_cancle">取 消</string>
+    <string name="add_password_group_sure">确 定</string>
+    <string name="add_password_group_hint">输入分组名</string>
+
 </resources>
