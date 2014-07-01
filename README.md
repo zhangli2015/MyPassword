@@ -48,7 +48,7 @@ QQ账号？微信号？邮箱密码？网站通行证？种种密码设置令人
 
 软件截图
 ---------------------------------
-<img src="Screenshot/01.png" width="220px"/>
-<img src="Screenshot/02.png" width="220px"/>
-<img src="Screenshot/03.png" width="220px"/>
-<img src="Screenshot/04.png" width="220px"/>
+<img src="Screenshot/01.png" width="320px"/>
+<img src="Screenshot/02.png" width="320px"/>
+<img src="Screenshot/03.png" width="320px"/>
+<img src="Screenshot/04.png" width="320px"/>
