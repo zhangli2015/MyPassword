@@ -38,8 +38,7 @@ public class Mainbinder extends Binder {
 		new AsyncSingleTask<Void>() {
 			@Override
 			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
-				passwordDatabase.setCurrentPasswd(newPasswd);
-				passwordDatabase.getWritableDatabase();
+				passwordDatabase.encodePasswd(newPasswd);
 				return asyncResult;
 			}
 		}.execute();
