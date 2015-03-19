@@ -1,6 +1,6 @@
 密码管理
 ==============================
-<img src="MyPassword/ic_launcher-web.png" width="256px"/>
+<img src="MyPassword/ic_launcher-web.png" width="200px"/>
 
 * E-mail：mail@zengdexing.com
 * File encoding：GBK
@@ -17,6 +17,12 @@ QQ账号？微信号？邮箱密码？网站通行证？种种密码设置令人
 
 版本
 ---------------------------------
+###4.3.3 已完成
+- 增加删除密码分组、修改密码分组名、合并密码分组功能
+- 提升密码的安全，使用用户手势加密
+- 修改密码插入日期的显示方式
+- 修复已知BUG
+
 ###4.3.2 已完成
 - 实现密码分类功能
 - 修复密码排序错误的BUG
