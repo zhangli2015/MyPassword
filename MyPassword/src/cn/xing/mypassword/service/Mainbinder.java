@@ -5,28 +5,65 @@ import java.util.List;
 
 import android.content.Context;
 import android.os.Binder;
+import cn.xing.mypassword.app.MyApplication;
+import cn.xing.mypassword.app.OnSettingChangeListener;
 import cn.xing.mypassword.database.PasswordDatabase;
 import cn.xing.mypassword.model.AsyncResult;
 import cn.xing.mypassword.model.AsyncSingleTask;
 import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.model.PasswordGroup;
+import cn.xing.mypassword.model.SettingKey;
 import cn.xing.mypassword.service.task.GetAllPasswordTask;
 
 public class Mainbinder extends Binder {
+	private MyApplication myApplication;
 	private PasswordDatabase passwordDatabase;
-	
+
 	/** 密码变化监听器 */
-	private List<OnPasswordListener> onPasswordListeners = new ArrayList<OnPasswordListener>();
+	private List<OnPasswordChangeListener> onPasswordListeners = new ArrayList<OnPasswordChangeListener>();
 
 	/** 密码分组变化监听 */
-	private List<OnPasswordGroupListener> onPasswordGroupListeners = new ArrayList<OnPasswordGroupListener>();
+	private List<OnPasswordGroupChangeListener> onPasswordGroupListeners = new ArrayList<OnPasswordGroupChangeListener>();
 
-	public Mainbinder(Context context) {
+	private OnSettingChangeListener onSettingChangeListener = new OnSettingChangeListener() {
+		@Override
+		public void onSettingChange(SettingKey key) {
+			// 用户密码变化了，重新解密后再加密
+			encodePasswd(myApplication.getString(SettingKey.LOCK_PATTERN, "[]"));
+		}
+	};
+
+	/** 重新解密 */
+	private void encodePasswd(final String newPasswd) {
+		new AsyncSingleTask<Void>() {
+			@Override
+			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
+				passwordDatabase.setCurrentPasswd(newPasswd);
+				passwordDatabase.getWritableDatabase();
+				return asyncResult;
+			}
+		}.execute();
+	}
+
+	public Mainbinder(Context context, MyApplication myApplication) {
 		passwordDatabase = new PasswordDatabase(context);
+		this.myApplication = myApplication;
+		final String passwd = myApplication.getString(SettingKey.LOCK_PATTERN, "[]");
+		myApplication.registOnSettingChangeListener(SettingKey.LOCK_PATTERN, onSettingChangeListener);
+		// 线程安全
+		new AsyncSingleTask<Void>() {
+			@Override
+			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
+				passwordDatabase.setCurrentPasswd(passwd);
+				passwordDatabase.getWritableDatabase();
+				return asyncResult;
+			}
+		}.execute();
 	}
 
 	void onDestroy() {
 		passwordDatabase.close();
+		myApplication.unregistOnSettingChangeListener(SettingKey.LOCK_PATTERN, onSettingChangeListener);
 		new AsyncSingleTask<Void>() {
 			@Override
 			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
@@ -40,7 +77,7 @@ public class Mainbinder extends Binder {
 		}.execute();
 	}
 
-	public void registOnPasswordGroupListener(final OnPasswordGroupListener onPasswordGroupListener) {
+	public void registOnPasswordGroupListener(final OnPasswordGroupChangeListener onPasswordGroupListener) {
 		new AsyncSingleTask<Void>() {
 			@Override
 			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
@@ -54,7 +91,7 @@ public class Mainbinder extends Binder {
 		}.execute();
 	}
 
-	public void unregistOnPasswordGroupListener(final OnPasswordGroupListener onPasswordGroupListener) {
+	public void unregistOnPasswordGroupListener(final OnPasswordGroupChangeListener onPasswordGroupListener) {
 		new AsyncSingleTask<Void>() {
 			@Override
 			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
@@ -68,7 +105,7 @@ public class Mainbinder extends Binder {
 		}.execute();
 	}
 
-	public void registOnPasswordListener(final OnPasswordListener onPasswordListener) {
+	public void registOnPasswordListener(final OnPasswordChangeListener onPasswordListener) {
 		new AsyncSingleTask<Void>() {
 			@Override
 			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
@@ -82,7 +119,7 @@ public class Mainbinder extends Binder {
 		}.execute();
 	}
 
-	public void unregistOnPasswordListener(final OnPasswordListener onPasswordListener) {
+	public void unregistOnPasswordListener(final OnPasswordChangeListener onPasswordListener) {
 		new AsyncSingleTask<Void>() {
 			@Override
 			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
@@ -126,7 +163,7 @@ public class Mainbinder extends Binder {
 
 			@Override
 			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
-				for (OnPasswordListener onPasswordListener : onPasswordListeners) {
+				for (OnPasswordChangeListener onPasswordListener : onPasswordListeners) {
 					onPasswordListener.onDeletePassword(id);
 				}
 			}
@@ -160,7 +197,7 @@ public class Mainbinder extends Binder {
 
 			@Override
 			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
-				for (OnPasswordListener onPasswordListener : onPasswordListeners) {
+				for (OnPasswordChangeListener onPasswordListener : onPasswordListeners) {
 					onPasswordListener.onUpdatePassword(password);
 				}
 			}
@@ -173,6 +210,7 @@ public class Mainbinder extends Binder {
 			protected AsyncResult<Password> doInBackground(AsyncResult<Password> asyncResult) {
 				String newGroupName = password.getGroupName();
 
+				/** 是否是新的分组 */
 				boolean isNew = true;
 				List<PasswordGroup> passwordGroups = passwordDatabase.getAllPasswordGroup();
 				for (int i = 0; i < passwordGroups.size(); i++) {
@@ -184,6 +222,7 @@ public class Mainbinder extends Binder {
 				}
 
 				if (isNew) {
+					// 不存在的分组，添加
 					PasswordGroup passwordGroup = new PasswordGroup();
 					passwordGroup.setGroupName(newGroupName);
 					passwordDatabase.addPasswordGroup(passwordGroup);
@@ -202,12 +241,12 @@ public class Mainbinder extends Binder {
 					PasswordGroup passwordGroup = new PasswordGroup();
 					passwordGroup.setGroupName(asyncResult.getData().getGroupName());
 
-					for (OnPasswordGroupListener onPasswordGroupListener : onPasswordGroupListeners) {
+					for (OnPasswordGroupChangeListener onPasswordGroupListener : onPasswordGroupListeners) {
 						onPasswordGroupListener.onNewPasswordGroup(passwordGroup);
 					}
 				}
 
-				for (OnPasswordListener onPasswordListener : onPasswordListeners) {
+				for (OnPasswordChangeListener onPasswordListener : onPasswordListeners) {
 					onPasswordListener.onNewPassword(asyncResult.getData());
 				}
 			}
@@ -243,7 +282,7 @@ public class Mainbinder extends Binder {
 			@Override
 			protected void runOnUIThread(AsyncResult<PasswordGroup> asyncResult) {
 				if (asyncResult.getBundle().getBoolean("isNew")) {
-					for (OnPasswordGroupListener onPasswordGroupListener : onPasswordGroupListeners) {
+					for (OnPasswordGroupChangeListener onPasswordGroupListener : onPasswordGroupListeners) {
 						onPasswordGroupListener.onNewPasswordGroup(asyncResult.getData());
 					}
 				}
@@ -269,9 +308,32 @@ public class Mainbinder extends Binder {
 			@Override
 			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
 				if (asyncResult.getResult() > 0) {
-					for (OnPasswordGroupListener onPasswordGroupListener : onPasswordGroupListeners) {
+					for (OnPasswordGroupChangeListener onPasswordGroupListener : onPasswordGroupListeners) {
 						onPasswordGroupListener.onDeletePasswordGroup(passwordGroupName);
 					}
+				}
+			}
+		}.execute();
+	}
+
+	/**
+	 * 更新组名字
+	 * 
+	 * @param oldGroupName
+	 * @param newGroupName
+	 */
+	public void updatePasswdGroupName(final String oldGroupName, final String newGroupName) {
+		new AsyncSingleTask<Void>() {
+			@Override
+			protected AsyncResult<Void> doInBackground(AsyncResult<Void> asyncResult) {
+				passwordDatabase.updatePasswdGroupName(oldGroupName, newGroupName);
+				return asyncResult;
+			}
+
+			@Override
+			protected void runOnUIThread(AsyncResult<Void> asyncResult) {
+				for (OnPasswordGroupChangeListener onPasswordGroupListener : onPasswordGroupListeners) {
+					onPasswordGroupListener.onUpdateGroupName(oldGroupName, newGroupName);
 				}
 			}
 		}.execute();

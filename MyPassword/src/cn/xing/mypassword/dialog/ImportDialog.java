@@ -64,7 +64,7 @@ public class ImportDialog extends ProgressDialog implements Callback {
 	 * @return 该文件夹下保存的文件
 	 */
 	private ArrayList<SearchResult> searchFile(File aFile) {
-		ArrayList<SearchResult> searchResults = new ArrayList<>();
+		ArrayList<SearchResult> searchResults = new ArrayList<SearchResult>();
 		File[] files = aFile.listFiles();
 		if (files != null) {
 			for (File file : files) {
@@ -97,7 +97,7 @@ public class ImportDialog extends ProgressDialog implements Callback {
 			@Override
 			protected AsyncResult<ArrayList<SearchResult>> doInBackground(
 					AsyncResult<ArrayList<SearchResult>> asyncResult) {
-				ArrayList<SearchResult> searchResults = new ArrayList<>();
+				ArrayList<SearchResult> searchResults = new ArrayList<SearchResult>();
 
 				File rootFile = getRootFile();
 				searchResults.addAll(searchFile(rootFile));
@@ -166,7 +166,7 @@ public class ImportDialog extends ProgressDialog implements Callback {
 					fileInputStream = new FileInputStream(searchResult.absoluteFilePath);
 					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));
 
-					ArrayList<Password> passwords = new ArrayList<>();
+					ArrayList<Password> passwords = new ArrayList<Password>();
 					String passwordStr = null;
 					while ((passwordStr = bufferedReader.readLine()) != null) {
 						Password password = Password.createFormJson(passwordStr);

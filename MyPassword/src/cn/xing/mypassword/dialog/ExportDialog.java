@@ -80,7 +80,7 @@ public class ExportDialog extends ProgressDialog implements OnGetAllPasswordCall
 
 	@Override
 	public void onGetAllPassword(String groupName, final List<Password> passwords) {
-		final List<Password> tempPasswords = new ArrayList<>(passwords);
+		final List<Password> tempPasswords = new ArrayList<Password>(passwords);
 		new AsyncSingleTask<File>() {
 			@Override
 			protected AsyncResult<File> doInBackground(AsyncResult<File> asyncResult) {

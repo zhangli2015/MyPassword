@@ -8,7 +8,7 @@ import cn.xing.mypassword.model.Password;
  * @author zengdexing
  * 
  */
-public interface OnPasswordListener {
+public interface OnPasswordChangeListener {
 	/**
 	 * 用户增加了新的密码
 	 */

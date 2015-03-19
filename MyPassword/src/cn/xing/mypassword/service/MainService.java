@@ -3,11 +3,11 @@ package cn.xing.mypassword.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import cn.xing.mypassword.app.MyApplication;
 
 public class MainService extends Service {
 	private Mainbinder mainbinder;
-
-	@Override
+	
 	public IBinder onBind(Intent intent) {
 		return mainbinder;
 	}
@@ -15,7 +15,7 @@ public class MainService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mainbinder = new Mainbinder(this);
+		mainbinder = new Mainbinder(this, (MyApplication) getApplicationContext());
 	}
 
 	@Override

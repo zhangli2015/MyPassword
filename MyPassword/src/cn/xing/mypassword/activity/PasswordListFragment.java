@@ -16,7 +16,7 @@ import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.model.SettingKey;
 import cn.xing.mypassword.service.Mainbinder;
 import cn.xing.mypassword.service.OnGetAllPasswordCallback;
-import cn.xing.mypassword.service.OnPasswordListener;
+import cn.xing.mypassword.service.OnPasswordChangeListener;
 
 import com.twotoasters.jazzylistview.JazzyEffect;
 import com.twotoasters.jazzylistview.JazzyHelper;
@@ -28,8 +28,8 @@ import com.twotoasters.jazzylistview.JazzyListView;
  * @author zengdexing
  * 
  */
-public class PasswordListFragment extends BaseFragment implements OnGetAllPasswordCallback, OnPasswordListener,
-		OnSettingChangeListener, android.view.View.OnClickListener {
+public class PasswordListFragment extends BaseFragment implements OnGetAllPasswordCallback, OnSettingChangeListener,
+		android.view.View.OnClickListener {
 
 	/** Êý¾Ý */
 	private PasswordListAdapter mainAdapter;
@@ -56,12 +56,34 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 		return passwordGroupName;
 	}
 
+	private OnPasswordChangeListener onPasswordListener = new OnPasswordChangeListener() {
+		@Override
+		public void onNewPassword(Password password) {
+			if (password.getGroupName().equals(passwordGroupName)) {
+				mainAdapter.onNewPassword(password);
+				initView();
+			}
+		}
+
+		@Override
+		public void onDeletePassword(int id) {
+			mainAdapter.onDeletePassword(id);
+			initView();
+		}
+
+		@Override
+		public void onUpdatePassword(Password newPassword) {
+			mainAdapter.onUpdatePassword(newPassword);
+			initView();
+		}
+	};
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mainAdapter = new PasswordListAdapter(getActivity());
 		getBaseActivity().getMyApplication().registOnSettingChangeListener(SettingKey.JAZZY_EFFECT, this);
-		mainbinder.registOnPasswordListener(this);
+		mainbinder.registOnPasswordListener(onPasswordListener);
 		showPasswordGroup(getBaseActivity().getSetting(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME,
 				getString(R.string.password_group_default_name)));
 	}
@@ -86,7 +108,7 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 
 	private void unregistOnPasswordListener() {
 		if (mainbinder != null) {
-			mainbinder.unregistOnPasswordListener(this);
+			mainbinder.unregistOnPasswordListener(onPasswordListener);
 			mainbinder = null;
 		}
 	}
@@ -148,26 +170,6 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 				showToast(R.string.action_jazzy_effect_toast, Toast.LENGTH_LONG);
 			}
 		}
-	}
-
-	@Override
-	public void onNewPassword(Password password) {
-		if (password.getGroupName().equals(passwordGroupName)) {
-			mainAdapter.onNewPassword(password);
-			initView();
-		}
-	}
-
-	@Override
-	public void onDeletePassword(int id) {
-		mainAdapter.onDeletePassword(id);
-		initView();
-	}
-
-	@Override
-	public void onUpdatePassword(Password newPassword) {
-		mainAdapter.onUpdatePassword(newPassword);
-		initView();
 	}
 
 	@Override

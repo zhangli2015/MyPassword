@@ -31,6 +31,7 @@ import cn.xing.mypassword.R;
 import cn.xing.mypassword.app.BaseActivity;
 import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.model.PasswordGroup;
+import cn.xing.mypassword.service.MainService;
 import cn.xing.mypassword.service.Mainbinder;
 import cn.xing.mypassword.service.OnGetAllPasswordCallback;
 import cn.xing.mypassword.service.OnGetAllPasswordGroupCallback;
@@ -118,7 +119,7 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 
 		initActionBar();
 
-		Intent intent = new Intent("cn.xing.mypassword");
+		Intent intent = new Intent(this, MainService.class);
 		this.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 	}
 

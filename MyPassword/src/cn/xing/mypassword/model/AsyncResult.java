@@ -2,6 +2,9 @@ package cn.xing.mypassword.model;
 
 import android.os.Bundle;
 
+/**
+ * 异步执行结果
+ */
 public class AsyncResult<Data> {
 	private int result;
 	private Data data;

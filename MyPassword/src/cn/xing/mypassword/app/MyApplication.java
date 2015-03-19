@@ -18,7 +18,7 @@ import cn.xing.mypassword.model.SettingKey;
 public class MyApplication extends Application implements OnSharedPreferenceChangeListener {
 	/** ÅäÖÃÎÄ¼ş */
 	private SharedPreferences sharedPreferences;
-	private Map<SettingKey, List<OnSettingChangeListener>> onSettingChangeListenerMap = new HashMap<>();
+	private Map<SettingKey, List<OnSettingChangeListener>> onSettingChangeListenerMap = new HashMap<SettingKey, List<OnSettingChangeListener>>();
 
 	@Override
 	public void onCreate() {

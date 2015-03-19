@@ -29,6 +29,7 @@ import cn.xing.mypassword.app.BaseActivity;
 import cn.xing.mypassword.dialog.ExportDialog;
 import cn.xing.mypassword.dialog.ImportDialog;
 import cn.xing.mypassword.model.SettingKey;
+import cn.xing.mypassword.service.MainService;
 import cn.xing.mypassword.service.Mainbinder;
 import cn.zdx.lib.annotation.FindViewById;
 
@@ -77,7 +78,6 @@ public class MainActivity extends BaseActivity {
 			mainbinder = (Mainbinder) service;
 			initFragment();
 		}
-
 	};
 
 	private void initFragment() {
@@ -106,7 +106,7 @@ public class MainActivity extends BaseActivity {
 
 		initDrawer();
 
-		Intent intent = new Intent("cn.xing.mypassword");
+		Intent intent = new Intent(this, MainService.class);
 		this.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
 		// ÓÑÃË×Ô¶¯Éý¼¶

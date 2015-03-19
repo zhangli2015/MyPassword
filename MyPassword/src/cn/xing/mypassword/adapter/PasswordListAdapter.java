@@ -119,7 +119,7 @@ public class PasswordListAdapter extends BaseAdapter {
 		ViewHolder viewHolder;
 		if (convertView == null) {
 			viewHolder = new ViewHolder();
-			convertView = LayoutInflater.from(context).inflate(R.layout.main_password_item, null);
+			convertView = LayoutInflater.from(context).inflate(R.layout.main_password_item, parent, false);
 			convertView.setTag(viewHolder);
 			XingAnnotationHelper.findView(viewHolder, convertView);
 			viewHolder.copyView.setOnClickListener(viewHolder);
@@ -301,12 +301,6 @@ public class PasswordListAdapter extends BaseAdapter {
 		} else if (distance < DAY) {
 			String dateString = context.getString(R.string.hour_ago);
 			result = String.format(Locale.getDefault(), dateString, distance / (1000 * 60 * 60));
-		} else if (distance < (DAY * 7)) {
-			String dateString = context.getString(R.string.day_ago);
-			result = String.format(Locale.getDefault(), dateString, distance / (DAY));
-		} else if (distance < DAY * 30) {
-			String dateString = context.getString(R.string.week_ago);
-			result = String.format(Locale.getDefault(), dateString, distance / (DAY * 7));
 		} else if (distance < DAY * 365) {
 			result = simpleDateFormatMonth.format(createDate);
 		} else {

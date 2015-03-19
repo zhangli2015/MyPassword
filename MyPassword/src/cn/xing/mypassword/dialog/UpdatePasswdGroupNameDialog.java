@@ -7,21 +7,25 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import cn.xing.mypassword.R;
-import cn.xing.mypassword.model.PasswordGroup;
 import cn.xing.mypassword.service.Mainbinder;
 import cn.zdx.lib.annotation.FindViewById;
 import cn.zdx.lib.annotation.ViewFinder;
 import cn.zdx.lib.annotation.XingAnnotationHelper;
 
 /**
- * 创建密码分组对话框
+ * 修改分组名称
+ * 
+ * @author zdxing 2015年3月19日
+ *
  */
-public class GreatePasswordGroupDialog extends Dialog {
-
+public class UpdatePasswdGroupNameDialog extends Dialog {
 	@FindViewById(R.id.add_passwrdGroup_editview)
 	private EditText editText;
 
 	private Mainbinder mainbinder;
+
+	/** 原分组名称 */
+	private String oldGroupName;
 
 	@FindViewById(R.id.add_password_group_cancle_btn)
 	private View cancleButton;
@@ -43,27 +47,26 @@ public class GreatePasswordGroupDialog extends Dialog {
 		@Override
 		public void onClick(View v) {
 			String name = editText.getText().toString().trim();
-			if (!name.equals("")) {
-				PasswordGroup passwordGroup = new PasswordGroup();
-				passwordGroup.setGroupName(name);
-				mainbinder.insertPasswordGroup(passwordGroup);
-				dismiss();
+			if (!name.equals("") && !name.equals(oldGroupName)) {
+				mainbinder.updatePasswdGroupName(oldGroupName, name);
 			}
+			dismiss();
 		}
 	};
 
-	public GreatePasswordGroupDialog(Context context, Mainbinder mainbinder) {
+	public UpdatePasswdGroupNameDialog(Context context, String oldGroupName, Mainbinder mainbinder) {
 		super(context, android.R.style.Theme_Translucent_NoTitleBar);
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
 						| WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 		this.mainbinder = mainbinder;
+		this.oldGroupName = oldGroupName;
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.dialog_create_password_group);
+		setContentView(R.layout.dialog_update_password_group_name);
 		XingAnnotationHelper.findView(this, ViewFinder.create(this));
 		initView();
 	}
@@ -76,5 +79,4 @@ public class GreatePasswordGroupDialog extends Dialog {
 
 		editText.requestFocus();
 	}
-
 }

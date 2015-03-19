@@ -6,9 +6,12 @@ import java.util.concurrent.Executors;
 import android.os.Handler;
 import android.os.Looper;
 
+/**
+ * 单任务线程，先进先出执行任务
+ */
 public abstract class AsyncSingleTask<D> {
-	private static ExecutorService executorService = Executors.newSingleThreadExecutor();
-	private static Handler handler = new Handler(Looper.getMainLooper());
+	private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+	private static final Handler handler = new Handler(Looper.getMainLooper());
 
 	private AsyncResult<D> asyncResult;
 	private boolean isRunned = false;
@@ -41,7 +44,15 @@ public abstract class AsyncSingleTask<D> {
 		}
 	};
 
+	/**
+	 * 在后台执行
+	 */
 	protected abstract AsyncResult<D> doInBackground(AsyncResult<D> asyncResult);
 
-	protected abstract void runOnUIThread(AsyncResult<D> asyncResult);
+	/**
+	 * 在UI线程执行
+	 * 
+	 * @param asyncResult
+	 */
+	protected void runOnUIThread(AsyncResult<D> asyncResult){}
 }

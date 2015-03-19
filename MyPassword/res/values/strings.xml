@@ -21,8 +21,6 @@
     <string name="just">刚刚</string>
     <string name="minute_ago">%d分钟前</string>
     <string name="hour_ago">%d小时前</string>
-    <string name="day_ago">%d天前</string>
-    <string name="week_ago">%d周前</string>
     <string name="title_activity_add_password">添 加</string>
     <string name="title_activity_modify_password">修 改</string>
     <string name="title_activity_feedback">意见反馈</string>
@@ -95,5 +93,11 @@
     <string name="add_password_group_cancle">取 消</string>
     <string name="add_password_group_sure">确 定</string>
     <string name="add_password_group_hint">输入分组名</string>
+    <string name="password_group_update_group_name">修改分组名</string>
+    <string name="password_group_delete_group">删除分组</string>
+    <string name="password_group_merge">合并分组到</string>
+    <string name="password_group_merge_error">没有分组可合并</string>
+    <string name="password_group_merge_loading">读取数据中，请稍候&#8230;</string>
+    <string name="update_password_group_name_hint">新的分组名</string>
 
 </resources>

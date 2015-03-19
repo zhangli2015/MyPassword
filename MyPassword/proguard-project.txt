@@ -26,3 +26,7 @@
 -keep public class cn.xing.mypassword.R$*{
 	public static final int *;
 }
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

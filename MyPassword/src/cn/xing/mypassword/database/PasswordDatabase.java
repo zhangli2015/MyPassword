@@ -9,14 +9,22 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import cn.xing.mypassword.R;
+import cn.xing.mypassword.app.AES;
 import cn.xing.mypassword.app.MyApplication;
 import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.model.PasswordGroup;
 import cn.xing.mypassword.model.SettingKey;
 
+/**
+ * 保存所有的密码数据
+ *
+ */
 public class PasswordDatabase extends SQLiteOpenHelper {
-	private static final int version = 3;
+	private static final int version = 4;
 	private Context context;
+
+	/** AES加密密匙 */
+	private String currentPasswd;
 
 	public PasswordDatabase(Context context) {
 		super(context, "password", null, version);
@@ -62,7 +70,9 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 	 * <p>
 	 * 2 ---> password表添加is_top字段，默认值为零，表示不置顶
 	 * <p>
-	 * 4 --->password表添加group_name字段，表示分组，默认值：默认；增加group(name)表，增加分组功能
+	 * 3 --->password表添加group_name字段，表示分组，默认值：默认；增加group(name)表，增加分组功能
+	 * <p>
+	 * 4 --->对密码进行加密
 	 */
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -76,6 +86,38 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 			db.execSQL(sql);
 
 			createGroupTable(db);
+		}
+
+		if (oldVersion < 4) {
+			upgradeFor4(db);
+		}
+	}
+
+	// 第四次升级， 加密数据库的所有密码
+	private void upgradeFor4(SQLiteDatabase db) {
+		// 取出数据库中的所有密码
+		List<Password> passwords = new ArrayList<Password>();
+		Cursor cursor = null;
+		try {
+			cursor = db.rawQuery("select id, password from password", null);
+			while (cursor.moveToNext()) {
+				Password password = new Password();
+				password.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				password.setPassword(cursor.getString(cursor.getColumnIndex("password")));
+				passwords.add(password);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null)
+				cursor.close();
+		}
+		// 对密码加密后，保存数据
+		for (Password password : passwords) {
+			ContentValues contentValues = new ContentValues();
+			contentValues.put("password", encrypt(password.getPassword()));
+			db.update("password", contentValues, "id = ?", new String[] { password.getId() + "" });
 		}
 	}
 
@@ -94,7 +136,7 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 			contentValues.put("create_date", password.getCreateDate());
 			contentValues.put("title", password.getTitle());
 			contentValues.put("user_name", password.getUserName());
-			contentValues.put("password", password.getPassword());
+			contentValues.put("password", encrypt(password.getPassword()));
 			contentValues.put("note", password.getNote());
 			contentValues.put("is_top", password.isTop() ? 1 : 0);
 			contentValues.put("group_name", password.getGroupName());
@@ -132,7 +174,7 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 			if (password.getUserName() != null)
 				contentValues.put("user_name", password.getUserName());
 			if (password.getPassword() != null)
-				contentValues.put("password", password.getPassword());
+				contentValues.put("password", encrypt(password.getPassword()));
 			if (password.getNote() != null)
 				contentValues.put("note", password.getNote());
 			contentValues.put("is_top", password.isTop() ? 1 : 0);
@@ -184,7 +226,7 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 		password.setCreateDate(cursor.getLong(cursor.getColumnIndex("create_date")));
 		password.setTitle(cursor.getString(cursor.getColumnIndex("title")));
 		password.setUserName(cursor.getString(cursor.getColumnIndex("user_name")));
-		password.setPassword(cursor.getString(cursor.getColumnIndex("password")));
+		password.setPassword(decrypt(cursor.getString(cursor.getColumnIndex("password"))));
 		password.setNote(cursor.getString(cursor.getColumnIndex("note")));
 		password.setTop(cursor.getInt(cursor.getColumnIndex("is_top")) == 1 ? true : false);
 		password.setGroupName(cursor.getString(cursor.getColumnIndex("group_name")));
@@ -313,6 +355,41 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 		return passwordGroups;
 	}
 
+	/**
+	 * 更新组名字
+	 * 
+	 * @param oldGroupName
+	 *            旧名字
+	 * @param newGroupName
+	 *            新的名字
+	 */
+	public void updatePasswdGroupName(String oldGroupName, String newGroupName) {
+		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+		Cursor rawQuery = null;
+		try {
+			rawQuery = sqLiteDatabase.rawQuery("select count(name) from password_group where name = ?",
+					new String[] { newGroupName });
+			if (rawQuery != null && rawQuery.moveToNext() && rawQuery.getInt(0) == 1) {
+				// 新的分组已经存在 直接删除旧的分组
+				sqLiteDatabase.delete("password_group", "name = ?", new String[] { oldGroupName });
+			} else {
+				// 新的分组不存在， 更新旧的分组名称
+				ContentValues contentValues = new ContentValues();
+				contentValues.put("name", newGroupName);
+				sqLiteDatabase.update("password_group", contentValues, "name = ?", new String[] { oldGroupName });
+			}
+
+			ContentValues contentValues = new ContentValues();
+			contentValues.put("group_name", newGroupName);
+			sqLiteDatabase.update("password", contentValues, "group_name = ?", new String[] { oldGroupName });
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (rawQuery != null)
+				rawQuery.close();
+		}
+	}
+
 	public int deletePasswordGroup(String passwordGroupName) {
 		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 		int count;
@@ -321,5 +398,72 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 			sqLiteDatabase.delete("password", "group_name = ?", new String[] { passwordGroupName });
 		}
 		return count;
+	}
+
+	public String getCurrentPasswd() {
+		return currentPasswd;
+	}
+
+	public void setCurrentPasswd(String currentPasswd) {
+		this.currentPasswd = currentPasswd;
+	}
+
+	/** 加密 */
+	public String encrypt(String key) {
+		String result = "";
+		try {
+			result = AES.encrypt(key, currentPasswd);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = key;
+		}
+		return result;
+	}
+
+	/** 解密 */
+	public String decrypt(String data) {
+		return decrypt(data, currentPasswd);
+	}
+
+	public String decrypt(String data, String passwd) {
+		String result = "";
+		try {
+			result = AES.decrypt(data, passwd);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result = data;
+		}
+		return result;
+	}
+
+	/** 用户手势变化后，重新加密数据库保存的密码 */
+	public void encodePasswd(String newPasswd) {
+		SQLiteDatabase sqLiteDatabase = getWritableDatabase();
+		List<Password> passwords = new ArrayList<Password>();
+
+		// 获取数据库所有的密码
+		Cursor cursor = null;
+		try {
+			cursor = sqLiteDatabase.rawQuery("select id, password from password", null);
+			while (cursor.moveToNext()) {
+				Password password = new Password();
+				password.setId(cursor.getInt(cursor.getColumnIndex("id")));
+				password.setPassword(decrypt(cursor.getString(cursor.getColumnIndex("password"))));
+				passwords.add(password);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (cursor != null)
+				cursor.close();
+		}
+
+		currentPasswd = newPasswd;
+		for (Password password : passwords) {
+			ContentValues contentValues = new ContentValues();
+			contentValues.put("password", encrypt(password.getPassword()));
+			sqLiteDatabase.update("password", contentValues, "id = ?", new String[] { password.getId() + "" });
+		}
 	}
 }
