@@ -56,7 +56,7 @@ public class PasswordDatabase extends SQLiteOpenHelper {
 
 		sql = "insert into password_group(name) values('" + getDefaultGroupName() + "')";
 		db.execSQL(sql);
-		getMyApplication().putString(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME, getDefaultGroupName());
+		getMyApplication().putSetting(SettingKey.LAST_SHOW_PASSWORDGROUP_NAME, getDefaultGroupName());
 	}
 
 	private MyApplication getMyApplication() {

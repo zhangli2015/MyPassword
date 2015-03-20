@@ -8,6 +8,9 @@ import cn.xing.mypassword.model.AsyncSingleTask;
 import cn.xing.mypassword.model.Password;
 import cn.xing.mypassword.service.OnGetAllPasswordCallback;
 
+/**
+ * 异步获取所有密码任务
+ */
 public class GetAllPasswordTask extends AsyncSingleTask<List<Password>> {
 	private PasswordDatabase passwordDatabase;
 	private OnGetAllPasswordCallback onGetAllPasswordCallback;

@@ -3,7 +3,6 @@ package cn.xing.mypassword.app;
 import java.lang.reflect.Field;
 
 import android.app.Activity;
-import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -15,11 +14,11 @@ import cn.zdx.lib.annotation.XingAnnotationHelper;
 
 import com.umeng.analytics.MobclickAgent;
 
+/**
+ * 程序基本类，所有的Activity都要继承本类，实现了友盟统计
+ *
+ */
 public class BaseActivity extends Activity {
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
 
 	@Override
 	protected void onResume() {
@@ -31,11 +30,6 @@ public class BaseActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		MobclickAgent.onPause(this);
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
 	}
 
 	public BaseActivity getActivity() {
@@ -55,11 +49,11 @@ public class BaseActivity extends Activity {
 	}
 
 	public String getSetting(SettingKey key, String defValue) {
-		return getMyApplication().getString(key, defValue);
+		return getMyApplication().getSetting(key, defValue);
 	}
 
 	public void putSetting(SettingKey key, String value) {
-		getMyApplication().putString(key, value);
+		getMyApplication().putSetting(key, value);
 	}
 
 	@Override

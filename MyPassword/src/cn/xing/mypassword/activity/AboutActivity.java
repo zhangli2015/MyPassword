@@ -42,6 +42,12 @@ public class AboutActivity extends BaseActivity {
 		Log.d("DeviceInfo", getDeviceInfo(this));
 	}
 
+	/**
+	 * 获取友盟设备信息，将该设备添加为测试设备
+	 * 
+	 * @param context
+	 * @return
+	 */
 	public static String getDeviceInfo(Context context) {
 		try {
 			org.json.JSONObject json = new org.json.JSONObject();

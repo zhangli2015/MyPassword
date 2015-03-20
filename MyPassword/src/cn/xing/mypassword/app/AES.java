@@ -10,6 +10,9 @@ import javax.crypto.spec.SecretKeySpec;
 import android.annotation.SuppressLint;
 import android.util.Base64;
 
+/**
+ * AESº”√‹π§æﬂ
+ */
 public class AES {
 
 	/**

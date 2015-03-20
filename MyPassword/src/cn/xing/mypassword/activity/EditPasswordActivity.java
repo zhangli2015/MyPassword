@@ -46,7 +46,7 @@ import cn.zdx.lib.annotation.FindViewById;
  */
 public class EditPasswordActivity extends BaseActivity implements OnGetPasswordCallback, OnGetAllPasswordCallback,
 		OnGetAllPasswordGroupCallback {
-	/** 传入参数 ID */
+	/** 传入参数 密码 ID */
 	public static final String ID = "password_id";
 	public static final String PASSWORD_GROUP = "password_group";
 	/** 添加模式 */
@@ -56,7 +56,8 @@ public class EditPasswordActivity extends BaseActivity implements OnGetPasswordC
 
 	/** 当前模式，默认增加 */
 	private int MODE = MODE_ADD;
-	/** */
+	
+	/** 修改密码的ID */
 	private int id;
 
 	/** 数据源 */

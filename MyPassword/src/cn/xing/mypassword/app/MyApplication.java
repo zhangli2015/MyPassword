@@ -40,7 +40,7 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 *            没有该设置将要返回的默认值
 	 * @return
 	 */
-	public String getString(SettingKey key, String defValue) {
+	public String getSetting(SettingKey key, String defValue) {
 		return sharedPreferences.getString(key.name(), defValue);
 	}
 
@@ -53,7 +53,7 @@ public class MyApplication extends Application implements OnSharedPreferenceChan
 	 * @param value
 	 *            需要保存的值
 	 */
-	public void putString(SettingKey key, String value) {
+	public void putSetting(SettingKey key, String value) {
 		sharedPreferences.edit().putString(key.name(), value).commit();
 	}
 
