@@ -3,7 +3,8 @@
 <img src="MyPassword/ic_launcher-web.png" width="200px"/>
 
 * E-mail：mail@zengdexing.com
-* File encoding：GBK
+* File encoding：UTF-8
+* 工程:Android Studio
 * 你的支持是我最大的动力
 
 下载地址：http://pre.im/mypassword
