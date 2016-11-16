@@ -99,5 +99,6 @@
     <string name="password_group_merge_error">没有分组可合并</string>
     <string name="password_group_merge_loading">读取数据中，请稍候&#8230;</string>
     <string name="update_password_group_name_hint">新的分组名</string>
+    <string name="password_search">搜索</string>
 
 </resources>

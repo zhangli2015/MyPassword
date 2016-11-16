@@ -2,6 +2,9 @@ package cn.xing.mypassword.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.widget.EditText;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +32,7 @@ import cn.xing.mypassword.service.OnPasswordChangeListener;
  * @author zengdexing
  */
 public class PasswordListFragment extends BaseFragment implements OnGetAllPasswordCallback, OnSettingChangeListener,
-        android.view.View.OnClickListener {
+        android.view.View.OnClickListener, TextWatcher {
 
     /** 数据 */
     private PasswordListAdapter mainAdapter;
@@ -39,6 +42,7 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
 
     private JazzyListView listView;
     /** 没有数据的提示框 */
+    private EditText searchedit;
     private View noDataView;
 
     private String passwordGroupName;
@@ -115,6 +119,10 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_password_list, container, false);
+
+        searchedit = (EditText) rootView.findViewById(R.id.edit_search);
+        searchedit.addTextChangedListener(this);
+
         listView = (JazzyListView) rootView.findViewById(R.id.main_listview);
         listView.setAdapter(mainAdapter);
         listView.setTransitionEffect(getJazzyEffect());
@@ -124,6 +132,7 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
         if (mainbinder == null) {
             noDataView.setVisibility(View.GONE);
             listView.setVisibility(View.VISIBLE);
+            searchedit.setVisibility(View.VISIBLE);
         } else {
             initView();
         }
@@ -146,6 +155,7 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        searchedit = null;
         listView = null;
         noDataView = null;
     }
@@ -182,5 +192,20 @@ public class PasswordListFragment extends BaseFragment implements OnGetAllPasswo
             default:
                 break;
         }
+    }
+    @Override
+    public void afterTextChanged(Editable arg0) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+        // TODO Auto-generated method stub	
+    }
+
+    @Override
+    public void onTextChanged(CharSequence arg0, int arg1, int arg2, int arg3) {
+        // TODO Auto-generated method stub
+        mainAdapter.onFilterPasswords(arg0.toString());
     }
 }

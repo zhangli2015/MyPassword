@@ -38,6 +38,7 @@ public class PasswordListAdapter extends BaseAdapter {
     /** 一天含有的秒数 */
     private static final long DAY = 1000 * 60 * 60 * 24;
     private List<PasswordItem> passwords = new ArrayList<PasswordItem>();
+    private List<PasswordItem> filtered_passwords = new ArrayList<PasswordItem>();
     private Context context;
     private SimpleDateFormat simpleDateFormatYear = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
     private int padding;
@@ -84,17 +85,18 @@ public class PasswordListAdapter extends BaseAdapter {
             this.passwords.add(new PasswordItem(password));
         }
         Collections.sort(this.passwords, comparator);
+        filtered_passwords.addAll(this.passwords);
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return passwords.size();
+        return filtered_passwords.size();
     }
 
     @Override
     public PasswordItem getItem(int position) {
-        return passwords.get(position);
+        return filtered_passwords.get(position);
     }
 
     @Override
@@ -364,5 +366,19 @@ public class PasswordListAdapter extends BaseAdapter {
         public void initDataString() {
             dataString = fomartDate(password.getCreateDate());
         }
+    }
+
+    public void onFilterPasswords(String string) {
+        // TODO Auto-generated method stub
+        if(string.isEmpty())
+            filtered_passwords.addAll(this.passwords);
+        else {
+            filtered_passwords.clear();
+            for (PasswordItem passworditem : passwords) {
+                if(passworditem.password.getTitle().contains(string))
+                    filtered_passwords.add(passworditem);
+            }
+        }
+        super.notifyDataSetChanged();
     }
 }
